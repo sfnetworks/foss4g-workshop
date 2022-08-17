@@ -10,7 +10,7 @@ output:
     css: xaringan-themer.css
     lib_dir: libs
     nature:
-      beforeInit: ["https://platform.twitter.com/widgets.js", "macro.js"]
+      beforeInit: ["https://platform.twitter.com/widgets.js","macro.js"]
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
@@ -44,8 +44,8 @@ style_mono_accent(
   base_color = '#ffa500', #orange
   title_slide_background_image = "https://raw.githubusercontent.com/sfnetworks/rladies-gye/main/figs/milano.png",
   background_image = "https://raw.githubusercontent.com/sfnetworks/rladies-gye/main/figs/milano_bg.png",
-  code_font_size = '17px',
-  text_font_size = '23px',
+  code_font_size = '16px',
+  text_font_size = '18px',
   text_slide_number_color = '#b3b3b3', #grey70
   link_color = '#ff4500', #orangered  
   footnote_font_size = '0.5em',
@@ -97,26 +97,6 @@ The slides can be found here: https://sfnetworks.github.io/foss4g-workshop/slide
 All the R code can be found here: https://github.com/sfnetworks/foss4g-workshop
 
 ---
-class: middle, hide-logo
-
-## Schedule 
-
-- 14.10 - 14.25: Brief introduction to the R package `sfnetworks` 
-  * What are Geospatial Networks?
-  * Motivations and philosophy behind `sfnetworks`
-- 14.25 - 14.45: Showcase the main pre-processing functions
-- 14.45 - 15.30: Live demo. Check the code at (TBD) 
-- 15.30 - 16.45: Q&A or additional examples
-
-You can install the stable version of `sfnetworks` from [CRAN](https://CRAN.R-project.org/package=sfnetworks) and the development version from the [develop](https://github.com/luukvdmeer/sfnetworks/tree/develop) branch of the github repo: 
-
-```{r, eval = FALSE}
-remotes::install_github("luukvdmeer/sfnetworks", "develop")
-```
-
-This tutorial is based on the github version of the package. 
-
----
 class: center, top, hide-logo
 
 ## <span style="color:#b3b3b3">Tidy</span> <span style="color:#ffa500">Geospatial Networks</span> <span style="color:#b3b3b3">in R</span>
@@ -135,11 +115,11 @@ Nodes usually associated with **POINT** geometries
 
 Edges usually associated with **LINESTRING** geometries
 
+The network topology does not contain *all* information of a geospatial network
+
+Both topological *and* spatial information are essential when analyzing them
+
 ]
-
-???
-
-Underline that we cannot split the spatial and graph dimensions and that the topological information is not enough to describe the network, we need the spatial component. 
 
 ---
 class: center, top, hide-logo
@@ -147,7 +127,7 @@ class: center, top, hide-logo
 ## <span style="color:#ffa500">Tidy</span> <span style="color:#b3b3b3">Geospatial Networks</span> <span style="color:#ffa500">in R</span>
 
 .left[
-.pull-left-60[
+.pull-left-70[
 ```{r tidyverseex}
 library(tidyverse)
 library(sfnetworks)
@@ -158,24 +138,19 @@ roxel %>%
 ]
 ]
 
-.pull-right-40[
+.pull-right-30[
 
-```{r, echo = FALSE, out.width="40%"}
-knitr::include_graphics("https://raw.githubusercontent.com/tidyverse/tidyverse/master/man/figures/logo.png")
-```
+![:scale 15%](https://raw.githubusercontent.com/tidyverse/tidyverse/master/man/figures/logo.png)
 
 **The tidyverse**
 
-Collection of packages for data science
+Collection of R packages for data science
 
 Shared design philosophy
 
 Tidy data structures
+
 ]
-
-???
-
-In that tibble we have that each row is an observation and columns are variables. 
 
 ---
 class: center, top, hide-logo
@@ -183,55 +158,167 @@ class: center, top, hide-logo
 ## <span style="color:#b3b3b3">Tidy</span> <span style="color:#ffa500">Geospatial</span> <span style="color:#b3b3b3">Networks</span> <span style="color:#ffa500">in R</span>
 
 .left[
-.pull-left-60[
+.pull-left-70[
 ```{r sfex}
 library(sf)
-roxel[1:3, "name"]
+roxel
 ```
 ]
 ]
 
-.pull-right-40[
+.pull-right-30[
 
-```{r, echo = FALSE, out.width="45%"}
-knitr::include_graphics("https://user-images.githubusercontent.com/520851/34887433-ce1d130e-f7c6-11e7-83fc-d60ad4fae6bd.gif")
-```
+![:scale 15%](https://user-images.githubusercontent.com/520851/34887433-ce1d130e-f7c6-11e7-83fc-d60ad4fae6bd.gif)
 
 **The sf package**
 
 R package for spatial data science
 
-Standardized storage of geographic features (e.g. points, lines, polygons)
+Standardized storage of geographic features (points, lines, polygons)
 
 Geometric operations (intersections, unions, ..)
 
+Compatible with the tidyverse
+
+New specific *verbs* for spatial data
+
 ]
 
-???
+---
+class: top, center, hide-logo
 
-Underline it's compatible with most dplyr and tidyr verbs. Each obs has it own geometry/location in space. 
+## <span style="color:#b3b3b3">Tidy</span> <span style="color:#ffa500">Geospatial</span> <span style="color:#b3b3b3">Networks</span> <span style="color:#ffa500">in R</span>
+
+```{r, include = F}
+par(mar = c(1, 1, 1, 1))
+```
+
+.pull-left-30[
+.left[
+```{r, eval = F}
+lines = roxel %>%
+  st_transform(3035)
+  
+plot(st_geometry(lines))
+```
+]
+]
+
+.pull-left-70[
+```{r, echo = F}
+lines = roxel %>%
+  st_transform(3035)
+  
+plot(st_geometry(lines))
+```
+]
+
+---
+class: top, hide-logo
+
+## <span style="color:#b3b3b3">Tidy</span> <span style="color:#ffa500">Geospatial</span> <span style="color:#b3b3b3">Networks</span> <span style="color:#ffa500">in R</span>
+
+.pull-left-40[
+```{r, eval = F}
+points = c(st_point(c(4151358, 3208045)),
+           st_point(c(4151340, 3207520)), 
+           st_point(c(4151756, 3207506)),
+           st_point(c(4151774, 3208031)))
+
+polygon = st_multipoint(points) %>%
+  st_cast("POLYGON") %>%
+  st_sfc(crs = 3035)
+
+plot(polygon)
+```
+]
+
+
+.pull-right-60[
+```{r, echo = F}
+points = c(st_point(c(4151358, 3208045)), st_point(c(4151340, 3207520)), 
+           st_point(c(4151756, 3207506)), st_point(c(4151774, 3208031)))
+
+polygon = st_multipoint(points) %>%
+  st_cast("POLYGON") %>%
+  st_sfc(crs = 3035)
+
+plot(polygon)
+```
+]
+
+---
+class: top, hide-logo
+
+## <span style="color:#b3b3b3">Tidy</span> <span style="color:#ffa500">Geospatial</span> <span style="color:#b3b3b3">Networks</span> <span style="color:#ffa500">in R</span>
+
+.pull-left-40[
+```{r, eval = F}
+plot(st_geometry(lines))
+plot(
+  polygon,
+  border = "red", 
+  lty = 4, lwd = 4, 
+  add = TRUE
+)
+```
+]
+.pull-right-60[
+```{r, echo = F}
+plot(st_geometry(lines))
+plot(polygon, border = "red", lty = 4, lwd = 4, add = TRUE)
+```
+]
+
+
+---
+class: top, hide-logo
+
+## <span style="color:#b3b3b3">Tidy</span> <span style="color:#ffa500">Geospatial</span> <span style="color:#b3b3b3">Networks</span> <span style="color:#ffa500">in R</span>
+
+.pull-left-30[
+.left[
+```{r, eval = F}
+lines %>%
+  st_filter(
+    polygon,
+    .pred = st_intersects
+  ) %>%
+  st_geometry() %>%
+  plot()
+```
+]
+]
+
+.pull-left-70[
+```{r, echo = F}
+lines %>%
+  st_filter(polygon, .pred = st_intersects) %>%
+  st_geometry() %>%
+  plot()
+```
+]
+
 
 ---
 class: center, top, hide-logo
 
 ## <span style="color:#b3b3b3">Tidy Geospatial</span> <span style="color:#ffa500">Networks in R</span>
 
-.pull-left-60[
+.pull-left-70[
 .left[
 ```{r}
-nodes = tibble(name = letters[1:3])
-edges = tibble(from = c(1,2,3), to = c(2,3,1))
-tidygraph::tbl_graph(nodes, edges)
+library(tidygraph)
+nodes = tibble(name = letters[1:4])
+edges = tibble(from = c(1,2,3,4), to = c(2,3,4,1))
+tbl_graph(nodes, edges)
 ```
 ]
 ]
 
-.pull-right-40[
+.pull-right-30[
 
-```{r, echo = FALSE, out.width="45%"}
-knitr::include_graphics("https://raw.githubusercontent.com/thomasp85/tidygraph/master/man/figures/logo.png")
-```
-
+![:scale 15%](https://raw.githubusercontent.com/thomasp85/tidygraph/master/man/figures/logo.png)
 
 **The tidygraph package**
 
@@ -239,11 +326,125 @@ Tidy interface to the **igraph** library for graph analysis
 
 Models a graph as a collection of two tibbles
 
+Graph algorithms (centralities, clustering, shortest paths, ..)
+
+Compatible with the tidyverse
+
+New specific *verbs* for graph structures
+
 ]
 
-???
+---
+class: top, center, hide-logo
 
-It is a wrapper around igraph, which doesn't fit in the tidyverse workflow. Networks cannot really be modelled as tidy data, but the two tables (i.e. edges and nodes) are represented as tidy data. We could simply add a geometry column to a tbl_graph object but that doesn't work since tidygraph doesn't work what to do with the geometry column. 
+## <span style="color:#b3b3b3">Tidy Geospatial</span> <span style="color:#ffa500">Networks in R</span>
+
+.pull-left[
+.left[
+```{r, eval = F}
+graph = tbl_graph(nodes, edges) %>%
+  activate(nodes) %>%
+  mutate(degree = centrality_degree()) %>%
+  activate(edges) %>%
+  mutate(centrality = centrality_edge_betweenness()) %>%
+  arrange(centrality)
+
+graph
+```
+]
+]
+
+.pull-right[
+.left[
+```{r, echo = F}
+graph = tbl_graph(nodes, edges) %>%
+  activate(nodes) %>%
+  mutate(degree = centrality_degree()) %>%
+  activate(edges) %>%
+  mutate(centrality = centrality_edge_betweenness()) %>%
+  arrange(centrality)
+
+graph
+```
+]
+]
+
+
+---
+class: top, center, hide-logo
+
+## <span style="color:#b3b3b3">Tidy Geospatial</span> <span style="color:#ffa500">Networks in R</span>
+
+.pull-left[
+.left[
+```{r, eval = F}
+geoms = roxel[1:4, ] %>%
+  st_geometry() %>%
+  st_transform(3035) %>%
+  st_centroid()
+
+nodes = st_sf(name = letters[1:4], geometry = geoms)
+edges = tibble(from = c(1,2,3,4), to = c(2,3,4,1))
+
+graph = tbl_graph(nodes, edges)
+graph
+```
+]
+]
+
+.pull-right[
+.left[
+```{r, echo = F}
+geoms = roxel[1:4, ] %>%
+  st_geometry() %>%
+  st_transform(3035) %>%
+  st_centroid()
+
+nodes = st_sf(name = letters[1:4], geometry = geoms)
+edges = tibble(from = c(1,2,3,4), to = c(2,3,4,1))
+
+graph = tbl_graph(nodes, edges)
+graph
+```
+]
+]
+
+---
+class: top, center, hide-logo
+
+## <span style="color:#b3b3b3">Tidy Geospatial</span> <span style="color:#ffa500">Networks in R</span>
+
+```{r, include = F}
+par(mar = c(5,5,5,5))
+```
+
+.left[
+```{r}
+plot(geoms, pch = 20, cex = 4, col = "#ffa500", axes = TRUE)
+```
+]
+
+---
+class: top, center, hide-logo
+
+## <span style="color:#b3b3b3">Tidy Geospatial</span> <span style="color:#ffa500">Networks in R</span>
+
+```{r, include = F}
+par(mar = c(1,1,1,1))
+```
+
+.left[
+```{r}
+plot(graph)
+```
+]
+
+---
+class: center, top, hide-logo
+
+## Tidy Geospatial Networks in R?
+
+<center><blockquote class="twitter-tweet"><p lang="en" dir="ltr">One of the biggest reasons we still have ArcGIS licenses is for Network Analysis (drive times, service areas etc). Does anyone have <a href="https://twitter.com/hashtag/foss4g?src=hash&amp;ref_src=twsrc%5Etfw">#foss4g</a> tools for this they like? Last time we tried pgRouting (yrs ago) it didn&#39;t feel fully formed yet, <a href="https://twitter.com/hashtag/gischat?src=hash&amp;ref_src=twsrc%5Etfw">#gischat</a></p>&mdash; Zev Ross (@zevross) <a href="https://twitter.com/zevross/status/1089908839816794118?ref_src=twsrc%5Etfw">January 28, 2019</a></blockquote></center> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 ---
 class: center, top, hide-logo
@@ -255,15 +456,11 @@ class: center, top, hide-logo
 ]
 
 .pull-right[
-```{r, echo = FALSE, out.width="38%"}
-knitr::include_graphics("https://raw.githubusercontent.com/thomasp85/tidygraph/master/man/figures/logo.png")
-```
+![:scale 38%](https://raw.githubusercontent.com/thomasp85/tidygraph/master/man/figures/logo.png)
 ]
 
 .center[
-```{r, echo = FALSE, out.width="20%"}
-knitr::include_graphics("https://raw.githubusercontent.com/luukvdmeer/sfnetworks/master/man/figures/logo.png")
-```
+![:scale 20%](https://raw.githubusercontent.com/luukvdmeer/sfnetworks/master/man/figures/logo.png)
 ]
 
 ---
@@ -278,33 +475,296 @@ class: center, top, hide-logo
 **sfnetworks:**
 
 > A close approximation of tidyness for relational geospatial data is two sf objects, one describing the node data and one describing the edge data
+  
+---
+class: top, hide-logo
+
+## The sfnetwork class
+
+.pull-left-40[
+```{r, eval = FALSE}
+roxel %>% 
+  st_geometry() %>%
+  plot()
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+roxel %>% 
+  st_geometry() %>%
+  plot()
+```
+]
 
 ---
 class: top, hide-logo
 
 ## The sfnetwork class
 
-.left[
-```{r, echo = 2L}
-options(sfn_max_print_active = 0L, sfn_max_print_inactive = 0L)
-as_sfnetwork(roxel)
+.pull-left-40[
+```{r, eval = FALSE}
+roxel %>% 
+  as_sfnetwork() %>%
+  plot()
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+roxel %>% 
+  as_sfnetwork() %>%
+  plot()
 ```
 ]
 
 ---
-class: middle
+class: top, hide-logo
 
-## Live demo! 
+## The sfnetwork class
 
-Now we will present a few basic concepts and simple examples using R code. Let's switch to [demo.Rmd](https://github.com/sfnetworks/OGH2021/raw/master/demo.Rmd). 
+.pull-left-40[
+```{r, eval = FALSE}
+roxel
+```
+]
 
-Please note that we will focus on road network analysis, but, in principle, the package can be used as a general tool for spatial networks (see [here](https://stackoverflow.com/questions/65958776/group-id-for-all-edges-between-points-using-sfnetwork-in-r) and [here](https://stackoverflow.com/questions/68809447/sequencing-of-river-network-calculation-using-sfnetworks-and-r) for examples of stream network analysis and [here](https://shriv-portfolio.netlify.app/post/infrastructure-flows/) for infrastructure flows). 
+.pull-right-60[
+```{r, echo = FALSE}
+roxel
+```
+]
+
+---
+class: top, hide-logo
+
+## The sfnetwork class
+
+.pull-left-40[
+```{r, eval = FALSE}
+roxel %>% 
+  as_sfnetwork()
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+roxel %>% 
+  as_sfnetwork()
+```
+]
+
+---
+class: top, hide-logo
+
+## The sfnetwork class
+
+.pull-left-40[
+```{r, eval = FALSE}
+roxel %>% 
+  as_sfnetwork() %>%
+  activate(nodes) %>%
+  st_as_sf()
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+roxel %>% 
+  as_sfnetwork() %>%
+  activate(nodes) %>%
+  st_as_sf()
+```
+]
+
+---
+class: top, hide-logo
+
+## The sfnetwork class
+
+.pull-left-40[
+```{r, eval = FALSE}
+roxel %>% 
+  as_sfnetwork() %>%
+  activate(edges) %>%
+  st_geometry()
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+roxel %>% 
+  as_sfnetwork() %>%
+  activate(edges) %>%
+  st_geometry()
+```
+]
+
+---
+class: top, hide-logo
+
+## The sfnetwork class
+
+.pull-left-40[
+```{r, eval = FALSE}
+roxel %>% 
+  as_sfnetwork() %>%
+  st_transform(3035)
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+roxel %>% 
+  as_sfnetwork() %>%
+  st_transform(3035)
+```
+]
+
+---
+class: top, hide-logo
+
+## Apply sf functions
+
+.pull-left-40[
+```{r, eval = FALSE}
+net = roxel %>% 
+  as_sfnetwork() %>%
+  st_transform(3035)
+
+plot(net)
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+net = roxel %>% 
+  as_sfnetwork() %>%
+  st_transform(3035)
+
+plot(net)
+```
+]
+
+---
+class: top, hide-logo
+
+## Apply sf functions
+
+.pull-left-40[
+```{r, eval = FALSE}
+plot(net)
+
+plot(
+  polygon, 
+  border = "red", 
+  lty = 4, 
+  lwd = 4, 
+  add = TRUE
+)
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+plot(net)
+
+plot(
+  polygon, 
+  border = "red", 
+  lty = 4, 
+  lwd = 4, 
+  add = TRUE
+)
+```
+]
+---
+class: top, hide-logo
+
+## Apply sf functions
+
+.pull-left-40[
+```{r, eval = FALSE}
+net %>%
+  st_filter(polygon, .pred = st_intersects) %>%
+  plot()
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+net %>%
+  st_filter(polygon, .pred = st_intersects) %>%
+  plot()
+```
+]
+
+
+
+---
+class: top, hide-logo
+
+## Apply tidygraph functions
+
+.pull-left-40[
+```{r, eval = FALSE}
+net = as_sfnetwork(roxel) %>%
+  activate(nodes) %>%
+  mutate(betweenness = centrality_betweenness()) %>%
+  activate(edges) %>%
+  mutate(length = edge_length())
+
+net
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+net = as_sfnetwork(roxel) %>%
+  activate(nodes) %>%
+  mutate(betweenness = centrality_betweenness()) %>%
+  activate(edges) %>%
+  mutate(length = edge_length())
+
+net
+```
+]
+
+---
+class: top, hide-logo
+
+## Apply tidygraph functions
+
+.pull-left-40[
+```{r, eval = FALSE}
+ggplot() +
+  geom_sf(
+    data = st_as_sf(net, "edges"),
+    col = "grey50"
+  ) +
+  geom_sf(
+    data = st_as_sf(net, "nodes"),
+    aes(size = betweenness)
+  ) +
+  ggtitle("Betweenness centrality")
+```
+]
+
+.pull-right-60[
+```{r, echo = FALSE}
+ggplot() +
+  geom_sf(data = st_as_sf(net, "edges"), col = "grey50") +
+  geom_sf(data = st_as_sf(net, "nodes"), aes(size = betweenness)) +
+  ggtitle("Betweenness centrality")
+```
+]
 
 ---
 class: center, middle
 
-## What can we do?
-### Network pre-processing and cleaning
+### What can we do?
+
+#### Network pre-processing and cleaning
 
 ---
 class: middle
@@ -358,12 +818,10 @@ par(mar = rep(1,4))
 
 #### Initial network
 
-.center[
 ```{r clean2, echo = F}
 plot(st_geometry(net, "edges"), col = edge_colors(net), lwd = 8)
 plot(st_geometry(net, "nodes"), pch = 20, cex = 4, add = TRUE)
 ```
-]
 
 ---
 class: middle
@@ -371,7 +829,6 @@ class: middle
 
 #### Simplifying edges
 
-.center[
 ```{r clean3, echo = F}
 simple = net %>%
   activate("edges") %>% 
@@ -381,7 +838,6 @@ simple = net %>%
 plot(st_geometry(simple, "edges"), col = edge_colors(simple), lwd = 8)
 plot(st_geometry(simple, "nodes"), pch = 20, cex = 4, add = TRUE)
 ```
-]
 
 ---
 class: middle
@@ -389,13 +845,11 @@ class: middle
 
 #### Subdividing edges
 
-.center[
 ```{r clean4, echo = F}
 subdivision = convert(simple, to_spatial_subdivision)
 plot(st_geometry(subdivision, "edges"), col = edge_colors(subdivision), lwd = 8)
 plot(st_geometry(subdivision, "nodes"), pch = 20, cex = 4, add = TRUE)
 ```
-]
 
 ---
 class: middle
@@ -403,17 +857,14 @@ class: middle
 
 #### Removing pseudo-nodes
 
-.center[
 ```{r clean5, echo = F}
 smoothed = convert(subdivision, to_spatial_smooth)
 plot(st_geometry(smoothed, "edges"), col = edge_colors(smoothed), lwd = 8)
 plot(st_geometry(smoothed, "nodes"), pch = 20, cex = 4, add = TRUE)
 ```
-]
 
 ---
 class: middle
-
 ### Network pre-processing and cleaning
 
 #### Simplifying intersections
@@ -439,24 +890,191 @@ clustered = clustered %>%
 contracted = convert(clustered, to_spatial_contracted, cls, cmp, simplify = TRUE)
 ```
 
-.center[
 ```{r clean6, echo = F}
 plot(st_geometry(contracted, "edges"), col = edge_colors(contracted), lwd = 8)
 plot(st_geometry(contracted, "nodes"), pch = 20, cex = 4, add = TRUE)
 ```
-]
+
+---
+class: center, middle
+
+### What can we do?
+
+#### Snapping
 
 ---
 class: middle
 
-## Live demo! 
+`r chunk_reveal(chunk_name = "snap", break_type = "user", display_type = "output", title = "### Snapping \n #### Snapping points to their nearest node")`
 
-We developed several more tools to analyse a spatial networks such as **graph and spatial morphers**, **graph and spatial filters** or **routing tools**. 
-Let's see more examples with live demo coding! 
+```{r snap, include = F}
+# Create a network.
+node1 = st_point(c(0, 0))
+node2 = st_point(c(1, 0))
+edge = st_sfc(st_linestring(c(node1, node2)))
+net = as_sfnetwork(edge)
+# Create a set of POIs.
+pois = data.frame(poi_type = c("bakery", "butcher"),
+                  x = c(0, 0.6), y = c(0.2, 0.2)) %>%
+  st_as_sf(coords = c("x", "y"))
+# Find indices of nearest nodes.
+nearest_nodes = st_nearest_feature(pois, net)
+# Snap geometries of POIs to the network.
+snapped_pois = pois %>%
+  st_set_geometry(st_geometry(net)[nearest_nodes])
+# Plot.
+plot_connections = function(pois) {
+  for (i in seq_len(nrow(pois))) {
+    connection = st_nearest_points(pois[i, ], net)[nearest_nodes[i]]
+    plot(connection, col = "grey", lty = 2, lwd = 2, add = TRUE)
+  }
+}
+par(mfrow = c(1,2), mar = rep(0,4))
+plot(net, cex = 2, lwd = 4) #BREAK
+plot_connections(pois)
+plot(pois, pch = 8, cex = 2, lwd = 2, add = TRUE) #BREAK
+plot(net, cex = 2, lwd = 4) #BREAK
+plot(snapped_pois, pch = 8, cex = 2, lwd = 2, add = TRUE)
+```
 
 ---
+class: middle
 
-## Conclusion 
+`r chunk_reveal(chunk_name = "blend", break_type = "user", display_type = "output", title = "### Snapping \n #### Blending points into a network")`
+
+```{r blend, include = F}
+node1 = st_point(c(0, 0))
+node2 = st_point(c(1, 0))
+edge = st_sfc(st_linestring(c(node1, node2)))
+net = as_sfnetwork(edge)
+pois = data.frame(poi_type = c("bakery", "butcher"),
+            x = c(0, 0.6), y = c(0.1, 0.1)) %>%
+  st_as_sf(coords = c("x", "y")) 
+blended = st_network_blend(net, pois) 
+plot_connections = function(pois) {
+  for (i in seq_len(nrow(pois))) {
+    connection = st_nearest_points(
+      pois[i, ],
+      activate(net, "edges")
+    )
+    plot(
+      connection,
+      col = "grey", lty = 2, lwd = 4,
+      add = TRUE
+    )
+  }
+}
+par(mfrow = c(1,2), mar = rep(0,4))
+plot(net, cex = 2, lwd = 4) #BREAK
+plot_connections(pois)
+plot(pois, pch = 8, cex = 2, lwd = 2, add = TRUE) #BREAK
+plot(blended, cex = 2, lwd = 4)
+```
+
+---
+class: center, middle
+
+### What can we do?
+
+#### Routing
+
+---
+class: top
+
+`r chunk_reveal(chunk_name = "plotpath", break_type = "user", display_type = "output", title = "### Routing \n #### Calculating shortest paths")`
+
+```{r plotpath, include = FALSE, fig.align='center'}
+
+net = as_sfnetwork(
+  roxel,
+  directed = FALSE
+  ) %>% 
+  st_transform(3035) %>% 
+  activate("edges") %>% 
+  mutate(weight = edge_length())
+paths = st_network_paths(
+  net,
+  from = 495,
+  to = c(458, 121)
+)
+plot_path = function(node_path) {
+  net %>%
+    activate("nodes") %>%
+    slice(node_path) %>%
+    plot(cex = 1.5, lwd = 1.5, add = TRUE)
+}
+colors = sf.colors(3, categorical = TRUE)
+par(mfrow = c(1,2), mar = rep(0,4))
+plot(net, col = "grey") #BREAK
+net %>%
+  activate("nodes") %>%
+  st_as_sf() %>%
+  slice(c(495, 121, 458)) %>%
+  plot(col = colors, pch = 8, cex = 2, lwd = 2, add = TRUE) #BREAK
+paths %>%
+  pull(node_paths) %>%
+  walk(plot_path) #BREAK
+p1 = st_geometry(net, "nodes")[495] + st_sfc(st_point(c(50, -50)))
+st_crs(p1) = st_crs(net)
+p2 = st_geometry(net, "nodes")[458]
+p3 = st_geometry(net, "nodes")[121] + st_sfc(st_point(c(-10, 100)))
+st_crs(p3) = st_crs(net)
+paths = st_network_paths(net, from = p1, to = c(p2, p3))
+plot(net, col = "grey") #BREAK
+plot(c(p1, p2, p3), col = colors, pch = 8, cex = 2, lwd = 2, add = TRUE)  #BREAK
+paths %>%
+  pull(node_paths) %>%
+  walk(plot_path)
+```
+
+---
+class: top
+
+### Routing 
+
+#### Retrieving an OD cost matrix
+
+```{r costmatrix}
+st_network_cost(
+  net, 
+  from = c(p1, p2, p3),
+  to = c(p1, p2, p3)
+)
+```
+
+---
+class: center, middle
+
+### What more?
+
+#### Much more...!
+
+---
+class: center, middle
+## Installation
+
+Install from CRAN:
+
+```{r, eval = F}
+install.packages("sfnetworks")
+```
+
+Install the development version from GitHub:
+
+```{r, eval = F}
+remotes::install_github("luukvdmeer/sfnetworks")
+```
+
+---
+class: center, middle
+
+### Want more?
+
+--
+
+See the docs and find more examples [in the package website](https://luukvdmeer.github.io/sfnetworks/index.html)
+
+--
 
 ### Have your own examples or ideas for the package?
 
@@ -471,16 +1089,6 @@ Join the [Discussion on GitHub](https://github.com/luukvdmeer/sfnetworks/discuss
 --
 
 Let us know with an [issue here](https://github.com/luukvdmeer/sfnetworks/issues)!
-
---
-
-### Have a question? 
-
-Feel free to add any question to [Stack Overflow](https://stackoverflow.com/questions/tagged/sfnetwork) using the tags `sfnetwork`. 
-
-.note[
-We will soon create a link between the tags `sfnetwork` (i.e. the name of the class) and `sfnetworks` (i.e. the name of the package). For the moment, you should use the tag `sfnetwork`. 
-]
 
 ---
 class: center, middle
