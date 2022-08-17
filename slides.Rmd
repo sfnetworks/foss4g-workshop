@@ -1,0 +1,509 @@
+---
+title: "`sfnetworks`: Tidy Geospatial Networks in R"
+subtitle: "FOSS4g 2022 | Workshop"
+author: "Lucas van der Meer, Lorena Abad, Andrea Gilardi, Robin Lovelace"
+date: "2022-08-22"
+output:
+  xaringan::moon_reader:
+    includes:
+      after_body: https://raw.githubusercontent.com/sfnetworks/rladies-gye/main/insert-logo.html
+    css: xaringan-themer.css
+    lib_dir: libs
+    nature:
+      beforeInit: ["https://platform.twitter.com/widgets.js", "macro.js"]
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: 16:9
+---
+class: center, middle, hide-logo
+
+```{r setup, include = FALSE}
+# This is the recommended set up for flipbooks
+# you might think about setting cache to TRUE as you gain practice --- building flipbooks from scratch can be time consuming
+options(width = 70, pillar.print_min = 5L, digits = 4)
+knitr::opts_chunk$set(
+  dev.args = list(bg = 'transparent'),
+  fig.width = 12, message = TRUE, fig.showtext = TRUE,
+  warning = FALSE, comment = "", cache = TRUE, fig.retina = 3
+)
+knitr::opts_knit$set(global.par = TRUE)
+Sys.setenv(`_R_S3_METHOD_REGISTRATION_NOTE_OVERWRITES_` = "false")
+library(flipbookr)
+library(xaringanthemer)
+library(sf)
+library(sfnetworks)
+library(tidygraph)
+library(igraph)
+library(tidyverse)
+```
+
+```{r xaringan-themer, include = FALSE}
+style_mono_accent(
+  # hex color should be provided, or theme_xaringan doesn't work
+  base_color = '#ffa500', #orange
+  title_slide_background_image = "https://raw.githubusercontent.com/sfnetworks/rladies-gye/main/figs/milano.png",
+  background_image = "https://raw.githubusercontent.com/sfnetworks/rladies-gye/main/figs/milano_bg.png",
+  code_font_size = '17px',
+  text_font_size = '23px',
+  text_slide_number_color = '#b3b3b3', #grey70
+  link_color = '#ff4500', #orangered  
+  footnote_font_size = '0.5em',
+  footnote_position_bottom = "30px",
+  code_highlight_color = "#ffedcc", #faded-orange
+  extra_css = list(
+    ".pull-left-80" = list("float" = "left", "width" = "75.2%"),
+    ".pull-left-70" = list("float" = "left", "width" = "65.8%"),
+    ".pull-left-60" = list("float" = "left", "width" = "56.4%"),
+    ".pull-left-50" = list("float" = "left", "wdith" = "50%"),
+    ".pull-left-40" = list("float" = "left", "width" = "37.6%"),
+    ".pull-left-30" = list("float" = "left", "width" = "28.2%"),
+    ".pull-right-70" = list("float" = "right", "width" = "65.8%"),
+    ".pull-right-60" = list("float" = "right", "width" = "56.4%"),
+    ".pull-right-50" = list("float" = "right", "width" = "50.0%"),
+    ".pull-right-40" = list("float" = "right", "width" = "37.6%"),
+    ".pull-right-30" = list("float" = "right", "width" = "28.2%"),
+    ".pull-right-30" = list("float" = "right", "width" = "20%"),
+    ".orange" = list("color" = "#ffa500"),
+    ".note" = list("font-size" = "0.8em", "position" = "absolute", 
+      "bottom" = "30px", "padding-right" = "4em")
+  )
+)
+```
+
+```{r color, echo = FALSE, results='asis'}
+# crayon needs to be explicitly activated in Rmd
+options(crayon.enabled = TRUE)
+# Hooks needs to be set to deal with outputs
+# thanks to fansi logic
+old_hooks <- fansi::set_knit_hooks(
+  knitr::knit_hooks,
+  which = c("output", "message", "error")
+)
+```
+
+## About us...
+
+Maybe add a pic of all of us?
+
+---
+class: center, middle, hide-logo
+
+
+## Let's start! 
+
+The slides can be found here: https://sfnetworks.github.io/foss4g-workshop/slides
+
+All the R code can be found here: https://github.com/sfnetworks/foss4g-workshop
+
+---
+class: middle, hide-logo
+
+## Schedule 
+
+- 14.10 - 14.25: Brief introduction to the R package `sfnetworks` 
+  * What are Geospatial Networks?
+  * Motivations and philosophy behind `sfnetworks`
+- 14.25 - 14.45: Showcase the main pre-processing functions
+- 14.45 - 15.30: Live demo. Check the code at (TBD) 
+- 15.30 - 16.45: Q&A or additional examples
+
+You can install the stable version of `sfnetworks` from [CRAN](https://CRAN.R-project.org/package=sfnetworks) and the development version from the [develop](https://github.com/luukvdmeer/sfnetworks/tree/develop) branch of the github repo: 
+
+```{r, eval = FALSE}
+remotes::install_github("luukvdmeer/sfnetworks", "develop")
+```
+
+This tutorial is based on the github version of the package. 
+
+---
+class: center, top, hide-logo
+
+## <span style="color:#b3b3b3">Tidy</span> <span style="color:#ffa500">Geospatial Networks</span> <span style="color:#b3b3b3">in R</span>
+
+.left[
+.pull-left-70[
+![](https://raw.githubusercontent.com/sfnetworks/rladies-gye/main/figs/river_network.png)
+]
+]
+
+.pull-right-30[
+
+Graphs embedded in geographical space
+
+Nodes usually associated with **POINT** geometries
+
+Edges usually associated with **LINESTRING** geometries
+
+]
+
+???
+
+Underline that we cannot split the spatial and graph dimensions and that the topological information is not enough to describe the network, we need the spatial component. 
+
+---
+class: center, top, hide-logo
+
+## <span style="color:#ffa500">Tidy</span> <span style="color:#b3b3b3">Geospatial Networks</span> <span style="color:#ffa500">in R</span>
+
+.left[
+.pull-left-60[
+```{r tidyverseex}
+library(tidyverse)
+library(sfnetworks)
+roxel %>%
+  as_tibble() %>%
+  select(name, type)
+```
+]
+]
+
+.pull-right-40[
+
+```{r, echo = FALSE, out.width="40%"}
+knitr::include_graphics("https://raw.githubusercontent.com/tidyverse/tidyverse/master/man/figures/logo.png")
+```
+
+**The tidyverse**
+
+Collection of packages for data science
+
+Shared design philosophy
+
+Tidy data structures
+]
+
+???
+
+In that tibble we have that each row is an observation and columns are variables. 
+
+---
+class: center, top, hide-logo
+
+## <span style="color:#b3b3b3">Tidy</span> <span style="color:#ffa500">Geospatial</span> <span style="color:#b3b3b3">Networks</span> <span style="color:#ffa500">in R</span>
+
+.left[
+.pull-left-60[
+```{r sfex}
+library(sf)
+roxel[1:3, "name"]
+```
+]
+]
+
+.pull-right-40[
+
+```{r, echo = FALSE, out.width="45%"}
+knitr::include_graphics("https://user-images.githubusercontent.com/520851/34887433-ce1d130e-f7c6-11e7-83fc-d60ad4fae6bd.gif")
+```
+
+**The sf package**
+
+R package for spatial data science
+
+Standardized storage of geographic features (e.g. points, lines, polygons)
+
+Geometric operations (intersections, unions, ..)
+
+]
+
+???
+
+Underline it's compatible with most dplyr and tidyr verbs. Each obs has it own geometry/location in space. 
+
+---
+class: center, top, hide-logo
+
+## <span style="color:#b3b3b3">Tidy Geospatial</span> <span style="color:#ffa500">Networks in R</span>
+
+.pull-left-60[
+.left[
+```{r}
+nodes = tibble(name = letters[1:3])
+edges = tibble(from = c(1,2,3), to = c(2,3,1))
+tidygraph::tbl_graph(nodes, edges)
+```
+]
+]
+
+.pull-right-40[
+
+```{r, echo = FALSE, out.width="45%"}
+knitr::include_graphics("https://raw.githubusercontent.com/thomasp85/tidygraph/master/man/figures/logo.png")
+```
+
+
+**The tidygraph package**
+
+Tidy interface to the **igraph** library for graph analysis
+
+Models a graph as a collection of two tibbles
+
+]
+
+???
+
+It is a wrapper around igraph, which doesn't fit in the tidyverse workflow. Networks cannot really be modelled as tidy data, but the two tables (i.e. edges and nodes) are represented as tidy data. We could simply add a geometry column to a tbl_graph object but that doesn't work since tidygraph doesn't work what to do with the geometry column. 
+
+---
+class: center, top, hide-logo
+
+## Tidy Geospatial Networks in R!
+
+.pull-left[
+![](https://user-images.githubusercontent.com/520851/34887433-ce1d130e-f7c6-11e7-83fc-d60ad4fae6bd.gif)
+]
+
+.pull-right[
+```{r, echo = FALSE, out.width="38%"}
+knitr::include_graphics("https://raw.githubusercontent.com/thomasp85/tidygraph/master/man/figures/logo.png")
+```
+]
+
+.center[
+```{r, echo = FALSE, out.width="20%"}
+knitr::include_graphics("https://raw.githubusercontent.com/luukvdmeer/sfnetworks/master/man/figures/logo.png")
+```
+]
+
+---
+class: center, top, hide-logo
+
+## Tidy Geospatial Networks in R!
+
+**tidygraph:**
+
+>  Relational data cannot in any meaningful way be encoded as a single tidy data frame. On the other hand, both node and edge data by itself fits very well within the tidy concept as each node and edge is, in a sense, a single observation. Thus, a close approximation of tidyness for relational data is two tidy data frames, one describing the node data and one describing the edge data.
+
+**sfnetworks:**
+
+> A close approximation of tidyness for relational geospatial data is two sf objects, one describing the node data and one describing the edge data
+
+---
+class: top, hide-logo
+
+## The sfnetwork class
+
+.left[
+```{r, echo = 2L}
+options(sfn_max_print_active = 0L, sfn_max_print_inactive = 0L)
+as_sfnetwork(roxel)
+```
+]
+
+---
+class: middle
+
+## Live demo! 
+
+Now we will present a few basic concepts and simple examples using R code. Let's switch to [demo.Rmd](https://github.com/sfnetworks/OGH2021/raw/master/demo.Rmd). 
+
+Please note that we will focus on road network analysis, but, in principle, the package can be used as a general tool for spatial networks (see [here](https://stackoverflow.com/questions/65958776/group-id-for-all-edges-between-points-using-sfnetwork-in-r) and [here](https://stackoverflow.com/questions/68809447/sequencing-of-river-network-calculation-using-sfnetworks-and-r) for examples of stream network analysis and [here](https://shriv-portfolio.netlify.app/post/infrastructure-flows/) for infrastructure flows). 
+
+---
+class: center, middle
+
+## What can we do?
+### Network pre-processing and cleaning
+
+---
+class: middle
+
+```{r clean1, include = F}
+p1 = st_point(c(0, 1))
+p2 = st_point(c(1, 1))
+p3 = st_point(c(2, 1))
+p4 = st_point(c(3, 1))
+p5 = st_point(c(4, 1))
+p6 = st_point(c(3, 2))
+p7 = st_point(c(3, 0))
+p8 = st_point(c(4, 3))
+p9 = st_point(c(4, 2))
+p10 = st_point(c(4, 0))
+p11 = st_point(c(5, 2))
+p12 = st_point(c(5, 0))
+p13 = st_point(c(5, -1))
+p14 = st_point(c(5.8, 1))
+p15 = st_point(c(6, 1.2))
+p16 = st_point(c(6.2, 1))
+p17 = st_point(c(6, 0.8))
+p18 = st_point(c(6, 2))
+p19 = st_point(c(6, -1))
+p20 = st_point(c(7, 1))
+l1 = st_sfc(st_linestring(c(p1, p2, p3)))
+l2 = st_sfc(st_linestring(c(p3, p4, p5)))
+l3 = st_sfc(st_linestring(c(p6, p4, p7)))
+l4 = st_sfc(st_linestring(c(p8, p11, p9)))
+l5 = st_sfc(st_linestring(c(p9, p5, p10)))
+l6 = st_sfc(st_linestring(c(p8, p9)))
+l7 = st_sfc(st_linestring(c(p10, p12, p13, p10)))
+l8 = st_sfc(st_linestring(c(p5, p14)))
+l9 = st_sfc(st_linestring(c(p15, p14)))
+l10 = st_sfc(st_linestring(c(p16, p15)))
+l11 = st_sfc(st_linestring(c(p14, p17)))
+l12 = st_sfc(st_linestring(c(p17, p16)))
+l13 = st_sfc(st_linestring(c(p15, p18)))
+l14 = st_sfc(st_linestring(c(p17, p19)))
+l15 = st_sfc(st_linestring(c(p16, p20)))
+lines = c(l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15)
+net = as_sfnetwork(lines)
+```
+
+```{r, include = FALSE}
+edge_colors = function(x) ggsci::pal_igv(palette = "default")(ecount(x))
+par(mar = rep(1,4))
+```
+
+### Network pre-processing and cleaning
+
+#### Initial network
+
+.center[
+```{r clean2, echo = F}
+plot(st_geometry(net, "edges"), col = edge_colors(net), lwd = 8)
+plot(st_geometry(net, "nodes"), pch = 20, cex = 4, add = TRUE)
+```
+]
+
+---
+class: middle
+### Network pre-processing and cleaning
+
+#### Simplifying edges
+
+.center[
+```{r clean3, echo = F}
+simple = net %>%
+  activate("edges") %>% 
+  arrange(edge_length()) %>% 
+  filter(!edge_is_multiple()) %>% 
+  filter(!edge_is_loop())
+plot(st_geometry(simple, "edges"), col = edge_colors(simple), lwd = 8)
+plot(st_geometry(simple, "nodes"), pch = 20, cex = 4, add = TRUE)
+```
+]
+
+---
+class: middle
+### Network pre-processing and cleaning
+
+#### Subdividing edges
+
+.center[
+```{r clean4, echo = F}
+subdivision = convert(simple, to_spatial_subdivision)
+plot(st_geometry(subdivision, "edges"), col = edge_colors(subdivision), lwd = 8)
+plot(st_geometry(subdivision, "nodes"), pch = 20, cex = 4, add = TRUE)
+```
+]
+
+---
+class: middle
+### Network pre-processing and cleaning
+
+#### Removing pseudo-nodes
+
+.center[
+```{r clean5, echo = F}
+smoothed = convert(subdivision, to_spatial_smooth)
+plot(st_geometry(smoothed, "edges"), col = edge_colors(smoothed), lwd = 8)
+plot(st_geometry(smoothed, "nodes"), pch = 20, cex = 4, add = TRUE)
+```
+]
+
+---
+class: middle
+
+### Network pre-processing and cleaning
+
+#### Simplifying intersections
+
+```{r contract, include = FALSE}
+# Retrieve the coordinates of the nodes.
+node_coords = smoothed %>%
+  activate("nodes") %>%
+  st_coordinates()
+# Cluster the nodes with the DBSCAN spatial clustering algorithm.
+# We set eps = 0.5 such that:
+# Nodes within a distance of 0.5 from each other will be in the same cluster.
+# We set minPts = 1 such that:
+# A node is assigned a cluster even if it is the only member of that cluster.
+library(dbscan)
+clusters = dbscan(node_coords, eps = 0.5, minPts = 1)$cluster 
+# Add the cluster information to the nodes of the network.
+clustered = smoothed %>%
+  activate("nodes") %>%
+  mutate(cls = clusters)
+clustered = clustered %>%
+  mutate(cmp = group_components())
+contracted = convert(clustered, to_spatial_contracted, cls, cmp, simplify = TRUE)
+```
+
+.center[
+```{r clean6, echo = F}
+plot(st_geometry(contracted, "edges"), col = edge_colors(contracted), lwd = 8)
+plot(st_geometry(contracted, "nodes"), pch = 20, cex = 4, add = TRUE)
+```
+]
+
+---
+class: middle
+
+## Live demo! 
+
+We developed several more tools to analyse a spatial networks such as **graph and spatial morphers**, **graph and spatial filters** or **routing tools**. 
+Let's see more examples with live demo coding! 
+
+---
+
+## Conclusion 
+
+### Have your own examples or ideas for the package?
+
+--
+
+Join the [Discussion on GitHub](https://github.com/luukvdmeer/sfnetworks/discussions)
+
+--
+
+### Found a bug?
+
+--
+
+Let us know with an [issue here](https://github.com/luukvdmeer/sfnetworks/issues)!
+
+--
+
+### Have a question? 
+
+Feel free to add any question to [Stack Overflow](https://stackoverflow.com/questions/tagged/sfnetwork) using the tags `sfnetwork`. 
+
+.note[
+We will soon create a link between the tags `sfnetwork` (i.e. the name of the class) and `sfnetworks` (i.e. the name of the package). For the moment, you should use the tag `sfnetwork`. 
+]
+
+---
+class: center, middle
+
+### Thank you!
+
+#### Q&A
+
+.note[
+.pull-left-70[
+.pull-left[
+```{r, echo = FALSE, out.width="50%"}
+knitr::include_graphics("https://raw.githubusercontent.com/RConsortium/artwork/main/r_consortium/R_Consortium-logo-horizontal-color.png")
+```
+]
+.pull-right[
+Slides powered by [xaringan](https://github.com/yihui/xaringan), [xaringanthemer](https://github.com/gadenbuie/xaringanthemer) and [flipbookr](https://github.com/EvaMaeRey/flipbookr). Slides originally developed by Luuk and Lorena, thanks!<br><br>. 
+]
+]
+.pull-right-30[
+```{r, echo = FALSE, out.width="100%"}
+knitr::include_graphics("https://2022.foss4g.org/img/logo/logo-dark.png")
+```
+]
+]
+
