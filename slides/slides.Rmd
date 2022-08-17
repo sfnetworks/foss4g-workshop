@@ -44,7 +44,7 @@ style_mono_accent(
   base_color = '#ffa500', #orange
   title_slide_background_image = "https://raw.githubusercontent.com/sfnetworks/rladies-gye/main/figs/milano.png",
   background_image = "https://raw.githubusercontent.com/sfnetworks/rladies-gye/main/figs/milano_bg.png",
-  code_font_size = '16px',
+  code_font_size = '15px',
   text_font_size = '18px',
   text_slide_number_color = '#b3b3b3', #grey70
   link_color = '#ff4500', #orangered  
@@ -1105,7 +1105,7 @@ knitr::include_graphics("https://raw.githubusercontent.com/RConsortium/artwork/m
 ```
 ]
 .pull-right[
-Slides powered by [xaringan](https://github.com/yihui/xaringan), [xaringanthemer](https://github.com/gadenbuie/xaringanthemer) and [flipbookr](https://github.com/EvaMaeRey/flipbookr). Slides originally developed by Luuk and Lorena, thanks!<br><br>. 
+Slides powered by [xaringan](https://github.com/yihui/xaringan), [xaringanthemer](https://github.com/gadenbuie/xaringanthemer) and [flipbookr](https://github.com/EvaMaeRey/flipbookr). <br><br> 
 ]
 ]
 .pull-right-30[
