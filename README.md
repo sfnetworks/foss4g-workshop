@@ -53,3 +53,9 @@ install.packages('tidygraph')
 install.packages('TSP')
 devtools::install_github('luukvdmeer/sfnetworks')
 ```
+
+## Question or problems?
+
+If you have any question related to running this tutorial, please [open an issue here](https://github.com/sfnetworks/foss4g-workshop/issues/new).
+
+If you have been using sfnetworks already and have an interesting problem to discuss, you can [go to our Discussions tab of the package here](https://github.com/luukvdmeer/sfnetworks/discussions). 
