@@ -4,7 +4,9 @@ library(tidygraph)
 library(sfnetworks)
 library(osmextract)
 library(mapview)
+library(grid)
 library(ggplot2)
+library(emoji)
 mapviewOptions(basemaps = "OpenStreetMap.HOT", viewer.suppress = TRUE)
 options(sfn_max_print_inactive = 6L)
 
@@ -22,7 +24,7 @@ firenze <- firenze[2, ]
 
 # Now we can download and extract the street segments of the city according to a
 # "walking" mode of transport.
-street_segments <- oe_get_network(
+street_segments_firenze <- oe_get_network(
   place = "Toscana", 
   mode = "walking", 
   boundary = firenze, 
@@ -33,31 +35,31 @@ street_segments <- oe_get_network(
 )
 
 # Print the output
-street_segments[, c(2, 3)]
+street_segments_firenze[, c(2, 3)]
 
 # Unfortunately, due to the cropping operations, we need to slightly tweak the
 # output before proceeding with the next steps.
-street_segments <- st_cast(street_segments, "LINESTRING")
+street_segments_firenze <- st_cast(street_segments_firenze, "LINESTRING")
 
 # Let's plot it! 
 par(mar = rep(0, 4))
-plot(st_boundary(st_geometry(firenze)), lwd = 2)
-plot(st_geometry(street_segments), add = TRUE, col = grey(0.8))
+plot(st_geometry(street_segments_firenze), reset = FALSE, col = grey(0.8))
+plot(st_boundary(st_geometry(firenze)), lwd = 2, add = TRUE)
 
 # We can clearly notice the shape of the river (Arno) and the railway (i.e. the
 # white polygon in the middle of the map). An interactive visualisation can be
 # derived as follows:
-mapview(st_geometry(street_segments))
+mapview(st_geometry(street_segments_firenze))
 
 # 2 - The sfnetwork data structure -----------------------------------------
 
 # Now we can finally convert the input segments into a sfnetwork object. For
 # simplicity, we will consider an undirected network (which may also be a
 # reasonable assumption for a walking mode of transport).
-sfn <- as_sfnetwork(street_segments, directed = FALSE)
+sfn_firenze <- as_sfnetwork(street_segments_firenze, directed = FALSE)
 
 # Print the output
-sfn
+sfn_firenze
 
 # Some comments: 
 # 
@@ -77,8 +79,8 @@ sfn
 # activate("nodes") or activate("edges"). We will see several examples later on.
 
 # The sfnetwork objects have an ad-hoc plot method
-plot(st_boundary(st_geometry(firenze)), lwd = 2)
-plot(sfn, add = TRUE, pch = ".", cex = 2, col = grey(0.85))
+plot(sfn_firenze, reset = FALSE, pch = ".", cex = 2, col = grey(0.85))
+plot(st_boundary(st_geometry(firenze)), lwd = 2, add = TRUE)
 
 # Unfortunately, there are so many nodes and edges that it's difficult to
 # understand the general structure of the street network. Therefore, let's zoom
@@ -86,8 +88,10 @@ plot(sfn, add = TRUE, pch = ".", cex = 2, col = grey(0.85))
 
 # First, we want to extract the nodes and edges geometry from the active
 # geometry table
-nodes <- sfn %>% activate("nodes") %>% st_geometry() #  or sfn %N>% st_geometry()
-edges <- sfn %E>% activate("edges") %>% st_geometry() # or sfn %E>% st_geometry()
+nodes <- sfn_firenze %>% activate("nodes") %>% st_geometry() 
+# or, equivalently, nodes <- sfn_firenze %N>% st_geometry()
+edges <- sfn_firenze %E>% activate("edges") %>% st_geometry() 
+# or, equivalently, sfn_firenze %E>% st_geometry()
 
 # and then we can plot them as usual
 par(mar = rep(2.5, 4))
@@ -96,7 +100,7 @@ plot(edges, add = TRUE, xlim = c(11.24, 11.26), ylim = c(43.76, 43.78))
 
 # A similar operation could also be implemented using coordinate query functions
 # and tidygraph verbs:
-sfn %N>% 
+sfn_firenze %N>% 
   filter(
     node_X() > 11.235 & node_X() < 11.265 & 
     node_Y() > 43.760 & node_Y() < 43.780
@@ -131,18 +135,18 @@ sfn %N>%
 # two edges are not connected, because they don't share endpoints. 
 
 # To see this problem more clearly, we can compute the component of each node
-sfn <- sfn %N>% 
+sfn_firenze <- sfn_firenze %N>% 
   mutate(group_component = group_components())
 
 # And plot it
 par(mar = rep(0.5, 4))
 layout(matrix(1:2, nrow = 2), heights = c(2.5, 0.5))
 plot(
-  sfn %E>% st_geometry() , col = "grey", 
+  sfn_firenze %E>% st_geometry() , col = "grey", 
   xlim = c(11.24, 11.26), ylim = c(43.76, 43.78), reset = FALSE
 )
 plot(
-  sfn %N>% st_as_sf(), pch  = 20, main = "", 
+  sfn_firenze %N>% st_as_sf(), pch  = 20, main = "", 
   xlim = c(11.24, 11.26), ylim = c(43.76, 43.78), add = TRUE
 )
 .image_scale(
@@ -156,25 +160,25 @@ plot(
 # connect them accordingly. The "to_spatial_subdivision" morpher can be used
 # exactly for this scope.
 
-sfn <- convert(sfn, to_spatial_subdivision, .clean = TRUE)
+sfn_firenze <- convert(sfn_firenze, to_spatial_subdivision, .clean = TRUE)
 
 # Check the printing
-sfn
+sfn_firenze
 # and we can see there are many more nodes and edges and less components. 
 
 # Let's repeat the previous experiment. 
-sfn <- sfn %N>% 
+sfn_firenze <- sfn_firenze %N>% 
   mutate(group_component = group_components())
 
 dev.off()
 par(mar = rep(0.5, 4))
 layout(matrix(1:2, nrow = 2), heights = c(2.5, 0.5))
 plot(
-  sfn %E>% st_geometry() , col = "grey", 
+  sfn_firenze %E>% st_geometry() , col = "grey", 
   xlim = c(11.24, 11.26), ylim = c(43.76, 43.78), reset = FALSE
 )
 plot(
-  sfn %N>% st_as_sf(), pch  = 20, main = "", 
+  sfn_firenze %N>% st_as_sf(), pch  = 20, main = "", 
   xlim = c(11.24, 11.26), ylim = c(43.76, 43.78), add = TRUE
 )
 .image_scale(
@@ -189,7 +193,7 @@ plot(
 # The "to_spatial_simple" morpher can be used to remove multiple edges and loops
 # (which might create useless complexities from a routing perspective). The morpher
 
-sfn = convert(sfn, to_spatial_simple)
+sfn_firenze = convert(sfn_firenze, to_spatial_simple)
 
 # Moreover, the morpher has an argument named summarise_attributes that lets you
 # specify exactly how you want to merge the attributes of each set of multiple
@@ -203,26 +207,194 @@ sfn = convert(sfn, to_spatial_simple)
 # Sometimes, these type of nodes are referred to as pseudo nodes.
 
 # The "to_spatial_smooth" morpher can be used to remove these redundant nodes: 
-sfn = convert(sfn, to_spatial_smooth, .clean = TRUE)
+sfn_firenze = convert(sfn_firenze, to_spatial_smooth, .clean = TRUE)
 
 # > 3.4 - Subsetting the main component -----------------------------------
 
 # As we can see from the previous map, it looks like most nodes belong to just
 # one component. We can check this hypothesis as follows:
-tail(sort(table(igraph::components(sfn)$membership), descending = FALSE))
+tail(sort(table(igraph::components(sfn_firenze)$membership), descending = FALSE))
 
 # Therefore, we can select only the nodes that belong to the main component
 # using the appropriate morpher.
-sfn = sfn %>% convert(to_components, .select = 1L, .clean = TRUE)
+sfn_firenze = sfn_firenze %>% convert(to_components, .select = 1L, .clean = TRUE)
 
 # Let's plot it again: 
 dev.off()
 par(mar = rep(0, 4))
-plot(st_boundary(st_geometry(firenze)), lwd = 2)
-plot(sfn, add = TRUE, pch = ".", cex = 2, col = grey(0.85))
+plot(sfn_firenze, reset = FALSE, pch = ".", cex = 2, col = grey(0.85))
+plot(st_boundary(st_geometry(firenze)), lwd = 2, add = TRUE)
 
 # We refer to the introductory vignettes for several more preprocessing steps.
 
-# 4. - Spatial joins and spatial filters ----------------------------------
+# 4 - Spatial joins and spatial filters ----------------------------------
 
+# Now we will showcase spatial joins and spatial filters using OSM based on the
+# city of Siena. In fact, Siena is a city near Florence "naturally" divided into
+# several neighbourhoods (also named "Contrade"). I think it might provide an
+# ideal example to showcase these functionalities.
+
+# > 4.1 - Spatial filters -------------------------------------------------
+
+# First, download the boundary data for the "Contrade" and merge them:
+contrade <- oe_get(
+  "Toscana", 
+  query = "
+  SELECT name, place, geometry 
+  FROM multipolygons 
+  WHERE name LIKE 'Contrada%' OR name LIKE 'Contrata%'", 
+  quiet = TRUE
+)
+contrade <- st_buffer(contrade, units::set_units(30, "m"))
+contrade_poly <- st_union(st_geometry(contrade))
+
+# One rectangular polygon that will be used in the next part of the code
+piazza_campo_poly <- st_sfc(st_polygon(
+  x = list(rbind(
+    c(11.329, 43.316), c(11.334, 43.316), 
+    c(11.334, 43.320), c(11.329, 43.320), 
+    c(11.329, 43.316)
+  ))
+), crs = 4326)
+
+# Then download the segments
+street_segments_siena <- oe_get_network(
+  place = "Toscana", 
+  mode = "walking", 
+  boundary = contrade_poly, 
+  boundary_type = "clipsrc", 
+  vectortranslate_options = c(
+    "-nlt", "PROMOTE_TO_MULTI" 
+  )
+)
+
+# And repeat the same steps as before
+street_segments_siena <- st_cast(street_segments_siena, "LINESTRING")
+sfn_siena <- as_sfnetwork(street_segments_siena, directed = FALSE)
+sfn_siena <- sfn_siena %>% 
+  convert(to_spatial_subdivision) %>% 
+  convert(to_spatial_simple) %>% 
+  convert(to_spatial_smooth) %>% 
+  convert(to_components, .select = 1L, .clean = TRUE)
+
+# Check the print
+sfn_siena
+
+# Let's plot it
+par(mar = rep(0, 4))
+plot(sfn_siena, reset = FALSE, col = grey(0.4))
+plot(st_boundary(st_geometry(contrade_poly)), lwd = 2, add = TRUE)
+plot(st_boundary(st_geometry(contrade)), lty = 2, col = "orange", add = TRUE, lwd = 1.25)
+
+# Using the function st_filter, we can select only the nodes that lie inside the
+# red polygon displayed below. 
+plot(sfn_siena, reset = FALSE, col = grey(0.4))
+plot(st_boundary(st_geometry(contrade_poly)), lwd = 2, add = TRUE)
+plot(st_boundary(piazza_campo_poly), col = "darkred", add = TRUE, lwd = 2)
+
+sfn_siena_small <- st_filter(activate(sfn_siena, "nodes"), piazza_campo_poly)
+
+# Check the print
+sfn_siena_small
+
+# We can also exploit the tidygraph implementation and use the ggplot2 package to
+# display the two networks extracting and plotting the nodes and edges table one
+# at a time. 
+contrade_plot <- ggplot() + 
+  geom_sf(data = st_boundary(st_geometry(contrade_poly))) + 
+  geom_sf(data = st_boundary(piazza_campo_poly), col = "darkred", linetype = 2, size = 1) + 
+  # Extract and plot the edges and nodes table
+  geom_sf(data = st_geometry(sfn_siena, "edges"), col = grey(0.5)) + 
+  geom_sf(data = st_geometry(sfn_siena, "nodes"), col = grey(0.5)) + 
+  theme_minimal() + 
+  theme(panel.grid.minor = element_blank())
+
+siena_small_plot <- ggplot() + 
+  geom_sf(data = st_boundary(piazza_campo_poly), col = "darkred", linetype = 2, size = 1) + 
+  geom_sf(data = st_geometry(sfn_siena_small, "nodes"), col = grey(0.4)) + 
+  geom_sf(data = st_geometry(sfn_siena_small, "edges"), col = grey(0.4)) + 
+  theme(
+    panel.border = element_blank(), panel.background = element_blank(), 
+    axis.ticks = element_blank(), axis.text = element_blank()
+  )
+
+# The object contrade_plot represent the plot of the whole city, while
+# "siena_small_plot" is just the nodes/edges inside the red polygon. We can now
+# define the "viewport" of the two figures and represent both of them at the
+# same time.
+dev.off()
+v1 <- viewport(width = 0.85, height = 0.85, x = 0.4, y = 0.5)
+v2 <- viewport(width = 0.45, height = 0.45, x = 0.75, y = 0.75)
+plot(contrade_plot, vp = v1)
+plot(siena_small_plot, vp = v2)
+grid.move.to(0.46, 0.47)
+grid.line.to(
+  x = 0.585, y = 0.75, arrow = grid::arrow(angle = 20), 
+  gp = gpar(lwd = 2, col = "darkred")
+)
+
+# The same approach can be adopted to filter the nodes inside more complicated
+# polygonal structure. For example, the following code filters only the nodes
+# inside the "Contrada del Nicchio" (displayed in dark-blue):
+contrada_nicchio <- filter(contrade, grepl("Nicchio", name)) 
+sfn_siena_nicchio <- st_filter(sfn_siena, contrada_nicchio)
+
+dev.off()
+par(mar = rep(0, 4))
+plot(sfn_siena, reset = FALSE, col = grey(0.4))
+plot(st_boundary(st_geometry(contrade_poly)), lwd = 2, add = TRUE)
+plot(st_boundary(st_geometry(contrada_nicchio)), lwd = 2, add = TRUE, lty = 2, col = "blue")
+plot(sfn_siena_nicchio, add = TRUE, col = "blue")
+
+# > 4.2 - Spatial joins ---------------------------------------------------
+
+# Information can be spatially joined into a network by using spatial predicate
+# functions inside the sf function sf::st_join(), which works as follows: the
+# function is applied to a set of geometries A with respect to another set of
+# geometries B, and attaches feature attributes from features in B to features
+# in A based on their spatial relation.
+sfn_siena <- st_join(sfn_siena, contrade, join = st_intersects)
+
+# Let's see the print
+sfn_siena
+
+# Add a plot
+ggplot() + 
+  geom_sf(data = st_boundary(st_geometry(contrade_poly))) + 
+  geom_sf(data = sfn_siena %E>% st_as_sf(), col = grey(0.4)) + 
+  geom_sf(data = sfn_siena %N>% st_as_sf(), aes(col = name)) + 
+  geom_sf(data = st_boundary(contrade), linetype = 2, col = grey(0.6)) + 
+  theme_minimal() + 
+  labs(col = "")
+
+# or, in a more playful way, we can also plot each point according to the symbol
+# (an emoji, actually) of the Contrade:
+siena_name <- sfn_siena %N>% pull(name)
+siena_emoji <- dplyr::case_when(
+  siena_name == "Contrada del Bruco" ~ emoji::emoji("lady beetle"),
+  siena_name == "Contrada del Drago" ~ emoji::emoji("dragon"),
+  siena_name == "Contrada del Leocorno" ~ emoji::emoji("unicorn"),
+  siena_name == "Contrada del Nicchio" ~  emoji::emoji("shell"),
+  siena_name == "Contrada del Valdimontone" ~  emoji::emoji("sheep"),
+  siena_name == "Contrada dell'Aquila" ~  emoji::emoji("eagle"),
+  siena_name == "Contrada dell'Istrice" ~ emoji::emoji("hedgehog"),
+  siena_name == "Contrada dell'Oca" ~ emoji::emoji("duck"),
+  siena_name == "Contrada dell'Onda" ~ emoji::emoji("dolphin"),
+  siena_name == "Contrada della Chiocciola" ~ emoji::emoji("snail"),
+  siena_name == "Contrada della Civetta" ~ emoji::emoji("owl"),
+  siena_name == "Contrada della Giraffa" ~ emoji::emoji("giraffe"),
+  siena_name == "Contrada della Lupa" ~ emoji::emoji("wolf"),
+  siena_name == "Contrada della Pantera" ~ emoji::emoji("cat"),
+  siena_name == "Contrada della Selva" ~ emoji::emoji("evergreen tree"),
+  siena_name == "Contrada della Tartuca" ~ emoji::emoji("turtle"),
+  siena_name == "Contrata della Torre" ~ emoji::emoji("castle"),
+  TRUE ~ NA_character_
+)
+sfn_siena_coords <- sfn_siena %>% st_coordinates() %>% data.frame()
+
+ggplot(sfn_siena_coords) + 
+  geom_sf(data = st_boundary(st_geometry(contrade_poly))) + 
+  geom_text(aes(X, Y), label = siena_emoji, size = 4.5) + 
+  theme_minimal() + 
+  theme(axis.title = element_blank(), axis.text = element_blank())
 
