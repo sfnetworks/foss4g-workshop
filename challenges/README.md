@@ -14,7 +14,7 @@ You can start by trying to get road network data from Florence yourself, as show
 
 - `ch0101`: It is September 8th, 1504. Michelangelo is waking up at his residence, later known as Casa Buonarroti. Today he needs to go to Palazzo Vecchio to finally unveil his masterpiece sculpture: **David**. What would be the fastest way for him to get there? *Bonus:* He forgot he should pass the Duomo first before the unveil, how would his route change?
 
-- `ch0102`: 
+- `ch0102`: April 17th, 1480. Leonardo da Vinci is, as usual, at the Medici Palace. He feels like going for a walk of around 20 minutes. Which areas in Florence can he reach within this time?
 
 - `ch0103`: 
 
