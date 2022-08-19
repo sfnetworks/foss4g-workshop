@@ -4,3 +4,5 @@
 .Ruserdata
 *.gpkg
 *.pbf
+slides/slides_cache/
+*.Rproj

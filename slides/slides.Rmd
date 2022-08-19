@@ -21,7 +21,10 @@ class: center, middle, hide-logo
 ```{r setup, include = FALSE}
 # This is the recommended set up for flipbooks
 # you might think about setting cache to TRUE as you gain practice --- building flipbooks from scratch can be time consuming
-options(width = 70, pillar.print_min = 5L, digits = 4)
+options(
+  width = 70, pillar.print_min = 5L, digits = 4, 
+  sfn_max_print_active = 3, sfn_max_print_inactive = 2
+)
 knitr::opts_chunk$set(
   dev.args = list(bg = 'transparent'),
   fig.width = 12, message = TRUE, fig.showtext = TRUE,
@@ -92,7 +95,7 @@ class: center, middle, hide-logo
 
 ## Let's start! 
 
-The slides can be found here: https://sfnetworks.github.io/foss4g-workshop/slides
+The slides can be found here: https://sfnetworks.github.io/foss4g-workshop/slides/slides
 
 All the R code can be found here: https://github.com/sfnetworks/foss4g-workshop
 
@@ -127,7 +130,7 @@ class: center, top, hide-logo
 ## <span style="color:#ffa500">Tidy</span> <span style="color:#b3b3b3">Geospatial Networks</span> <span style="color:#ffa500">in R</span>
 
 .left[
-.pull-left-70[
+.pull-left-60[
 ```{r tidyverseex}
 library(tidyverse)
 library(sfnetworks)
@@ -138,9 +141,9 @@ roxel %>%
 ]
 ]
 
-.pull-right-30[
+.pull-right-40[
 
-![:scale 15%](https://raw.githubusercontent.com/tidyverse/tidyverse/master/man/figures/logo.png)
+![:scale 20%](https://raw.githubusercontent.com/tidyverse/tidyverse/master/man/figures/logo.png)
 
 **The tidyverse**
 
@@ -168,7 +171,7 @@ roxel
 
 .pull-right-30[
 
-![:scale 15%](https://user-images.githubusercontent.com/520851/34887433-ce1d130e-f7c6-11e7-83fc-d60ad4fae6bd.gif)
+![:scale 50%](https://user-images.githubusercontent.com/520851/34887433-ce1d130e-f7c6-11e7-83fc-d60ad4fae6bd.gif)
 
 **The sf package**
 
@@ -290,7 +293,7 @@ lines %>%
 ]
 ]
 
-.pull-left-70[
+.pull-right-70[
 ```{r, echo = F}
 lines %>%
   st_filter(polygon, .pred = st_intersects) %>%
@@ -305,7 +308,7 @@ class: center, top, hide-logo
 
 ## <span style="color:#b3b3b3">Tidy Geospatial</span> <span style="color:#ffa500">Networks in R</span>
 
-.pull-left-70[
+.pull-left-60[
 .left[
 ```{r}
 library(tidygraph)
@@ -316,9 +319,9 @@ tbl_graph(nodes, edges)
 ]
 ]
 
-.pull-right-30[
+.pull-right-40[
 
-![:scale 15%](https://raw.githubusercontent.com/thomasp85/tidygraph/master/man/figures/logo.png)
+![:scale 20%](https://raw.githubusercontent.com/thomasp85/tidygraph/master/man/figures/logo.png)
 
 **The tidygraph package**
 
@@ -346,8 +349,8 @@ graph = tbl_graph(nodes, edges) %>%
   activate(nodes) %>%
   mutate(degree = centrality_degree()) %>%
   activate(edges) %>%
-  mutate(centrality = centrality_edge_betweenness()) %>%
-  arrange(centrality)
+  mutate(btwn = centrality_edge_betweenness()) %>%
+  arrange(btwn)
 
 graph
 ```
@@ -361,8 +364,8 @@ graph = tbl_graph(nodes, edges) %>%
   activate(nodes) %>%
   mutate(degree = centrality_degree()) %>%
   activate(edges) %>%
-  mutate(centrality = centrality_edge_betweenness()) %>%
-  arrange(centrality)
+  mutate(btwn = centrality_edge_betweenness()) %>%
+  arrange(btwn)
 
 graph
 ```
@@ -439,6 +442,21 @@ plot(graph)
 ```
 ]
 
+---
+class: top, center, hide-logo
+
+## <span style="color:#b3b3b3">Tidy </span><span style="color:#ffa500">Geospatial Networks in R</span>
+
+.pull-left[
+![](https://raw.githubusercontent.com/ropensci/stplanr/master/man/figures/logo.png)
+]
+.pull-right[
+![](https://atfutures.github.io/dodgr/articles/fig2.png)
+]
+
+--
+
+![:scale 15%](https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/Ellipsis.svg/1280px-Ellipsis.svg.png)
 ---
 class: center, top, hide-logo
 
@@ -605,7 +623,7 @@ class: top, hide-logo
 
 ## The sfnetwork class
 
-.pull-left-40[
+.pull-left-30[
 ```{r, eval = FALSE}
 roxel %>% 
   as_sfnetwork() %>%
@@ -613,7 +631,7 @@ roxel %>%
 ```
 ]
 
-.pull-right-60[
+.pull-right-70[
 ```{r, echo = FALSE}
 roxel %>% 
   as_sfnetwork() %>%
@@ -686,7 +704,10 @@ class: top, hide-logo
 .pull-left-40[
 ```{r, eval = FALSE}
 net %>%
-  st_filter(polygon, .pred = st_intersects) %>%
+  st_filter(
+    polygon,
+    .pred = st_intersects
+  ) %>%
   plot()
 ```
 ]
@@ -710,9 +731,13 @@ class: top, hide-logo
 ```{r, eval = FALSE}
 net = as_sfnetwork(roxel) %>%
   activate(nodes) %>%
-  mutate(betweenness = centrality_betweenness()) %>%
+  mutate(
+    btwn = centrality_betweenness()
+  ) %>%
   activate(edges) %>%
-  mutate(length = edge_length())
+  mutate(
+    length = edge_length()
+  )
 
 net
 ```
@@ -722,7 +747,7 @@ net
 ```{r, echo = FALSE}
 net = as_sfnetwork(roxel) %>%
   activate(nodes) %>%
-  mutate(betweenness = centrality_betweenness()) %>%
+  mutate(btwn = centrality_betweenness()) %>%
   activate(edges) %>%
   mutate(length = edge_length())
 
@@ -744,7 +769,7 @@ ggplot() +
   ) +
   geom_sf(
     data = st_as_sf(net, "nodes"),
-    aes(size = betweenness)
+    aes(size = btwn)
   ) +
   ggtitle("Betweenness centrality")
 ```
@@ -754,8 +779,13 @@ ggplot() +
 ```{r, echo = FALSE}
 ggplot() +
   geom_sf(data = st_as_sf(net, "edges"), col = "grey50") +
-  geom_sf(data = st_as_sf(net, "nodes"), aes(size = betweenness)) +
-  ggtitle("Betweenness centrality")
+  geom_sf(data = st_as_sf(net, "nodes"), aes(size = btwn)) +
+  ggtitle("Betweenness centrality") +
+  theme_bw() +
+  theme(
+    panel.background = element_rect(fill = "transparent"),
+    plot.background = element_rect(fill = "transparent")
+  )
 ```
 ]
 
@@ -827,7 +857,7 @@ plot(st_geometry(net, "nodes"), pch = 20, cex = 4, add = TRUE)
 class: middle
 ### Network pre-processing and cleaning
 
-#### Simplifying edges
+#### Simplifying edges: `to_spatial_simple()`
 
 ```{r clean3, echo = F}
 simple = net %>%
@@ -843,7 +873,7 @@ plot(st_geometry(simple, "nodes"), pch = 20, cex = 4, add = TRUE)
 class: middle
 ### Network pre-processing and cleaning
 
-#### Subdividing edges
+#### Subdividing edges: `to_spatial_subdivision()`
 
 ```{r clean4, echo = F}
 subdivision = convert(simple, to_spatial_subdivision)
@@ -855,7 +885,7 @@ plot(st_geometry(subdivision, "nodes"), pch = 20, cex = 4, add = TRUE)
 class: middle
 ### Network pre-processing and cleaning
 
-#### Removing pseudo-nodes
+#### Removing pseudo-nodes: `to_spatial_smooth()`
 
 ```{r clean5, echo = F}
 smoothed = convert(subdivision, to_spatial_smooth)
@@ -867,7 +897,7 @@ plot(st_geometry(smoothed, "nodes"), pch = 20, cex = 4, add = TRUE)
 class: middle
 ### Network pre-processing and cleaning
 
-#### Simplifying intersections
+#### Simplifying intersections: `to_spatial_contracted()`
 
 ```{r contract, include = FALSE}
 # Retrieve the coordinates of the nodes.
@@ -984,7 +1014,6 @@ class: top
 `r chunk_reveal(chunk_name = "plotpath", break_type = "user", display_type = "output", title = "### Routing \n #### Calculating shortest paths")`
 
 ```{r plotpath, include = FALSE, fig.align='center'}
-
 net = as_sfnetwork(
   roxel,
   directed = FALSE
@@ -1043,14 +1072,30 @@ st_network_cost(
 ```
 
 ---
-class: center, middle
+class: top
 
 ### What more?
 
 #### Much more...!
 
+```{r, fig.show = "hold", out.width = '31%', echo = FALSE}
+knitr::include_graphics('https://luukvdmeer.github.io/sfnetworks/articles/sfn04_routing_files/figure-html/unnamed-chunk-8-1.png')
+knitr::include_graphics("https://luukvdmeer.github.io/sfnetworks/articles/sfn04_routing_files/figure-html/unnamed-chunk-12-1.png")
+knitr::include_graphics("https://luukvdmeer.github.io/sfnetworks/articles/sfn04_routing_files/figure-html/unnamed-chunk-15-1.png")
+```
+
+---
+class: top
+
+### More to come...
+
+.center[
+![](https://r-spatial.github.io/spdep/articles/nb_files/figure-html/unnamed-chunk-5-1.png)
+]
+
 ---
 class: center, middle
+
 ## Installation
 
 Install from CRAN:
@@ -1096,6 +1141,9 @@ class: center, middle
 ### Thank you!
 
 #### Q&A
+
+GitHub repo: https://github.com/sfnetworks/foss4g-workshop
+
 
 .note[
 .pull-left-70[
