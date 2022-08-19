@@ -4,13 +4,13 @@ Time for a hands-on round! Below you will find a set of challenges, ranging from
 
 We want to see your work! Exploring how the community uses the package is one of the best ways we have to discover bugs, point us to new features or to get amazed by the possibilities of the package. 
 
-To share your solution to your chosen challenge, you can create a pull-request on this repository following this [template.Rmd](https://github.com/sfnetworks/foss4g-workshop/challenges/template.Rmd) file. You can call your file `challengecode_name.Rmd`, e.g. `ch0102_Lorena.Rmd` and save into the [challenges](https://github.com/sfnetworks/foss4g-workshop/challenges/) directory.
+To share your solution to your chosen challenge, you can create a pull-request on this repository following this [template.Rmd](https://github.com/sfnetworks/foss4g-workshop/tree/main/challenges/template.Rmd) file. You can call your file `challengecode_name.Rmd`, e.g. `ch0102_Lorena.Rmd` and save into the [challenges](https://github.com/sfnetworks/foss4g-workshop/tree/main/challenges) directory.
 
 ## Beginners :fire:
 
 This is the first time you are working with R-Spatial and related packages? Give these challenges a go. 
 
-You can start by trying to get road network data from Florence yourself, as shown on the demo. But if that is too much, you can take a look into the [data/](https://github.com/sfnetworks/foss4g-workshop/data/) directory, where some data is already prepared for you. The same goes for the POIs. If you want to do this yourself, you can check the [scripts/](https://github.com/sfnetworks/foss4g-workshop/scripts/) directory, which might even have some extra helper scripts for you :)
+You can start by trying to get road network data from Florence yourself, as shown on the demo. But if that is too much, you can take a look into the [data/](https://github.com/sfnetworks/foss4g-workshop/tree/main/data/) directory, where some data is already prepared for you. The same goes for the POIs. If you want to do this yourself, you can check the [scripts/](https://github.com/sfnetworks/foss4g-workshop/tree/main/scripts/) directory, which might even have some extra helper scripts for you :)
 
 - `ch0101`: It is September 8th, 1504. Michelangelo is waking up at his residence, later known as Casa Buonarroti. Today he needs to go to Palazzo Vecchio to finally unveil his masterpiece sculpture: **David**. What would be the fastest way for him to get there? *Bonus:* He forgot he should pass the Duomo first before the unveil, how would his route change?
 
@@ -24,7 +24,7 @@ If you have a bit more experience with coding in general, these challenges might
 
 For acquiring the needed data, please read the **Beginners** prompt.
 
-- `ch0201`: It's Wednesday, the first day of the conference is about to finish. The last talk you want to attend ends at 4PM. You have some time to kill before the ice-breaker at 6PM, why not do a little tour of Florence attractions? Under [data/pois.rda](https://github.com/sfnetworks/foss4g-workshop/data/) you will find a set of points of interest in the city. How many can you visit within these two hours? What is the final route you will take?
+- `ch0201`: It's Wednesday, the first day of the conference is about to finish. The last talk you want to attend ends at 4PM. You have some time to kill before the ice-breaker at 6PM, why not do a little tour of Florence attractions? Under [data/pois.rda](https://github.com/sfnetworks/foss4g-workshop/tree/main/data/) you will find a set of points of interest in the city. How many can you visit within these two hours? What is the final route you will take?
 
 - `ch0202`:
 
