@@ -36,10 +36,15 @@ This will build a Docker container based on the [Dockerfile](docker/Dockerfile) 
 Then to start the container for the first time run:
 
 ```
-bash create_container.sh
+cd ..
+bash ./docker/create_container.sh
 ```
 
-Make sure to update your working directory to mount a volume with your data. 
+#### Troubleshoot - Windows:
+
+- You might need to run `sh ./docker/create_container.sh`
+
+- Make sure to update your working directory to mount a volume to the current directory inside **create_container.sh**, specifically this line: `-v CHANGE_DIR_HERE://home/rstudio/workdir \`. Note the extra `/` before home.
 
 
 ### Option 3: You are an R-Spatial user
