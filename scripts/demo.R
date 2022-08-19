@@ -7,6 +7,7 @@ library(mapview)
 library(grid)
 library(ggplot2)
 library(emoji)
+library(purrr)
 mapviewOptions(basemaps = "OpenStreetMap.HOT", viewer.suppress = TRUE)
 options(sfn_max_print_inactive = 6L)
 
@@ -47,8 +48,8 @@ plot(st_geometry(street_segments_firenze), reset = FALSE, col = grey(0.8))
 plot(st_boundary(st_geometry(firenze)), lwd = 2, add = TRUE)
 
 # We can clearly notice the shape of the river (Arno) and the railway (i.e. the
-# white polygon in the middle of the map). An interactive visualisation can be
-# derived as follows:
+# series of white polygon in the middle of the map). An interactive
+# visualisation can be derived as follows:
 mapview(st_geometry(street_segments_firenze))
 
 # 2 - The sfnetwork data structure -----------------------------------------
@@ -74,7 +75,7 @@ sfn_firenze
 # structure of tidygraph, there is no need to first extract one of those
 # elements before you are able to apply your favourite sf predicates or
 # tidyverse verbs. Instead, there is always one element at a time labelled as
-# active. This active element is the target of data manipulation. The active
+# active. This active element is the target of the data manipulation. The active
 # element can be changed with the activate() verb, i.e. by calling
 # activate("nodes") or activate("edges"). We will see several examples later on.
 
@@ -84,12 +85,14 @@ plot(st_boundary(st_geometry(firenze)), lwd = 2, add = TRUE)
 
 # Unfortunately, there are so many nodes and edges that it's difficult to
 # understand the general structure of the street network. Therefore, let's zoom
-# in an area close to Piazza Duomo.
+# into an area close to Piazza Duomo.
 
 # First, we want to extract the nodes and edges geometry from the active
-# geometry table
+# geometry table: 
+
 nodes <- sfn_firenze %>% activate("nodes") %>% st_geometry() 
 # or, equivalently, nodes <- sfn_firenze %N>% st_geometry()
+
 edges <- sfn_firenze %E>% activate("edges") %>% st_geometry() 
 # or, equivalently, sfn_firenze %E>% st_geometry()
 
@@ -109,14 +112,15 @@ sfn_firenze %N>%
   
 # But how did we derive the network structure? The operation works as follows:
 # the input segments represent the edges of the sfnetwork object, while the
-# nodes are created at their endpoints. The edges are connected if they share
-# one point in the union of their spatial boundaries (i.e. the terminal points).
+# nodes are created at their endpoints. Two distinct edges are connected if they
+# share one point in the union of their spatial boundaries (i.e. the terminal
+# points).
 
 # 3 - Pre-processing steps -------------------------------------------------
 
 # As we all know, real world data requires several steps before we are able to
 # apply our favourite tool for geo-spatial analysis or statistical modelling
-# technique. Spatial networks are no exception.
+# technique. Spatial networks represent no exception.
 
 # For this reason, we developed several morphers (i.e. functions to transform
 # the network into alternative states) that can be used to clean the network
@@ -134,7 +138,8 @@ sfn_firenze %N>%
 # point or endpoint of another edge. In the network structure, however, these
 # two edges are not connected, because they don't share endpoints. 
 
-# To see this problem more clearly, we can compute the component of each node
+# To see this problem more clearly, we can compute the components membership of
+# each node
 sfn_firenze <- sfn_firenze %N>% 
   mutate(group_component = group_components())
 
@@ -164,7 +169,8 @@ sfn_firenze <- convert(sfn_firenze, to_spatial_subdivision, .clean = TRUE)
 
 # Check the printing
 sfn_firenze
-# and we can see there are many more nodes and edges and less components. 
+
+# We can see there are many more nodes and edges and less components. 
 
 # Let's repeat the previous experiment. 
 sfn_firenze <- sfn_firenze %N>% 
@@ -190,8 +196,9 @@ plot(
 
 # > 3.2 - Simplify network ------------------------------------------------
 
-# The "to_spatial_simple" morpher can be used to remove multiple edges and loops
-# (which might create useless complexities from a routing perspective). The morpher
+# The "to_spatial_simple" morpher can be used to remove multiple edges between
+# the same nodes and loops (which might create useless complexities from a
+# routing perspective): 
 
 sfn_firenze = convert(sfn_firenze, to_spatial_simple)
 
@@ -202,7 +209,7 @@ sfn_firenze = convert(sfn_firenze, to_spatial_simple)
 # > 3.3 - Smooth pseudo-nodes ---------------------------------------------
 
 # A network may contain nodes that have only one incoming and one outgoing edge.
-# For tasks like calculating shortest paths, such nodes are redundant, because
+# For tasks like calculating shortest paths, such nodes are redundant because
 # they don't represent a point where different directions can possibly be taken.
 # Sometimes, these type of nodes are referred to as pseudo nodes.
 
@@ -222,17 +229,24 @@ sfn_firenze = sfn_firenze %>% convert(to_components, .select = 1L, .clean = TRUE
 # Let's plot it again: 
 dev.off()
 par(mar = rep(0, 4))
-plot(sfn_firenze, reset = FALSE, pch = ".", cex = 2, col = grey(0.85))
-plot(st_boundary(st_geometry(firenze)), lwd = 2, add = TRUE)
+sfn_firenze %N>% 
+  filter(
+    node_X() > 11.235 & node_X() < 11.265 & 
+      node_Y() > 43.760 & node_Y() < 43.780
+  ) %>% 
+  plot()
 
 # We refer to the introductory vignettes for several more preprocessing steps.
 
 # 4 - Spatial joins and spatial filters ----------------------------------
 
-# Now we will showcase spatial joins and spatial filters using OSM based on the
-# city of Siena. In fact, Siena is a city near Florence "naturally" divided into
-# several neighbourhoods (also named "Contrade"). I think it might provide an
-# ideal example to showcase these functionalities.
+# Now we will showcase spatial joins and spatial filters using OSM data extracted
+# from the city of Siena. In fact, Siena is a city near Florence "naturally"
+# divided into several neighbourhoods (also named "Contrade"). I think it might
+# provide an ideal example to showcase these functionalities.
+
+# Clear ws 
+rm(edges, nodes, street_segments_firenze); gc()
 
 # > 4.1 - Spatial filters -------------------------------------------------
 
@@ -353,6 +367,8 @@ plot(sfn_siena_nicchio, add = TRUE, col = "blue")
 # function is applied to a set of geometries A with respect to another set of
 # geometries B, and attaches feature attributes from features in B to features
 # in A based on their spatial relation.
+
+# For example, we can match each node with the Contrada where they are located: 
 sfn_siena <- st_join(sfn_siena, contrade, join = st_intersects)
 
 # Let's see the print
@@ -397,4 +413,117 @@ ggplot(sfn_siena_coords) +
   geom_text(aes(X, Y), label = siena_emoji, size = 4.5) + 
   theme_minimal() + 
   theme(axis.title = element_blank(), axis.text = element_blank())
+
+# Clear ws
+rm(list = setdiff(ls(), c("firenze", "sfn_firenze"))); gc()
+
+# 5 - Shortest paths and TSP ----------------------------------------------
+
+# Calculating shortest paths between pairs of nodes is a core task in network
+# analysis. The sfnetworks package offers wrappers around the path calculation
+# functions of igraph, making it easier to use them when working with spatial
+# data and tidyverse packages. 
+
+# Now we can showcase some of these functionalities considering the data from
+# Florence, but, for simplicity, we will restrict ourself to a smaller street
+# network near the city centre.
+
+firenze_buffer <- st_buffer(
+  st_sfc(st_point(c(11.25596, 43.76911)), crs = 4326), 
+  dist = units::set_units(1.25, "km")
+)
+sfn_firenze_small <- st_filter(sfn_firenze %>% activate("nodes"), firenze_buffer)
+
+# Now, for a proper spatial routing, we need to add a column of weights (i.e.
+# the geographical lengths of the edges) to the sfnetwork data:
+sfn_firenze_small = sfn_firenze_small %E>%
+  mutate(weight = edge_length())
+
+# The function st_network_paths() is a wrapper around the igraph function
+# igraph::shortest_paths(). 
+paths = st_network_paths(sfn_firenze_small, from = c(1), to = c(10, 100))
+paths
+
+# The output is a tibble with one row per path. Let's check one of them
+paths %>% slice(1) %>% pull(node_paths)
+
+# We can easily plot these paths
+par(mar = rep(2.5, 4))
+cols <- sf.colors(3, categorical = TRUE)
+plot_path = function(node_path) {
+  sfn_firenze_small %>%
+    activate("nodes") %>%
+    slice(node_path) %>%
+    plot(cex = 1.5, lwd = 1.5, add = TRUE)
+}
+plot(sfn_firenze_small, axes = TRUE, col = "grey")
+paths %>% pull(node_paths) %>% walk(plot_path)
+plot(sfn_firenze_small %N>% slice(1), col = cols[1], add = TRUE, pch = 16, cex = 3)
+plot(sfn_firenze_small %N>% slice(c(10, 100)), col = cols[2:3], add = TRUE, pch = 16, cex = 3)
+
+# The main advantage of st_network_paths over igraph::distances is that, besides
+# node indices, it gives the additional option to provide any (set of)
+# geospatial point(s) as from and to location(s) of the shortest paths, either
+# as sf or sfc object. 
+
+# Moreover, considering that the smaller city network contains a set of major POI(s)
+
+pois = st_sf(
+  poi = c(
+    "Palazzo Pitti",
+    "Basilica di St. Croce",
+    "Duomo",
+    "Piazzale Michelangelo",
+    "Galleria degli Uffizi",
+    "Palazzio Vecchio",
+    "Ponte Vecchio",
+    "Palazzo Congressi"
+  ),
+  geometry = st_sfc(
+    st_point(c(11.2500, 43.7649)),
+    st_point(c(11.2624, 43.7685)),
+    st_point(c(11.2560, 43.7734)),
+    st_point(c(11.2650, 43.7629)),
+    st_point(c(11.2553, 43.7678)),
+    st_point(c(11.2562, 43.7694)),
+    st_point(c(11.2531, 43.7680)),
+    st_point(c(11.2497, 43.7780))
+  ),
+  crs = 4326
+)
+
+ggplot() +
+  geom_sf(data = st_geometry(sfn_firenze_small, "nodes"), col = grey(0.8)) + 
+  geom_sf(data = st_geometry(sfn_firenze_small, "edges"), col = grey(0.8)) + 
+  geom_sf(data = pois, aes(col = poi), size = 4) + 
+  theme_minimal() + theme(panel.grid = element_blank(), legend.position = "bottom") + 
+  labs(col = "")
+
+# we can calculate the shortest path between some of them using an ah-hoc
+# spatial morpher named "to_spatial_shortest_path":
+duomo_palazzo_pitti <- sfn_firenze_small %>% 
+  convert(
+    to_spatial_shortest_paths, 
+    from = pois %>% filter(poi == "Duomo"), 
+    to = pois %>% filter(poi == "Palazzo Pitti"), 
+    .clean = TRUE
+  )
+duomo_piazzale_michelangelo <- sfn_firenze_small %>% 
+  convert(
+    to_spatial_shortest_paths, 
+    from = pois %>% filter(poi == "Duomo"), 
+    to = pois %>% filter(poi == "Piazzale Michelangelo"), 
+    .clean = TRUE
+  )
+
+# and plot the result
+
+ggplot() +
+  geom_sf(data = st_geometry(sfn_firenze_small, "nodes"), col = grey(0.8)) + 
+  geom_sf(data = st_geometry(sfn_firenze_small, "edges"), col = grey(0.8)) + 
+  geom_sf(data = pois, aes(col = poi), size = 4) + 
+  geom_sf(data = duomo_palazzo_pitti %E>% st_geometry(), col = "black", size = 2) +
+  geom_sf(data = duomo_piazzale_michelangelo %E>% st_geometry(), col = "black", size = 2) + 
+  theme_minimal() + theme(panel.grid = element_blank(), legend.position = "bottom") + 
+  labs(col = "")
 
