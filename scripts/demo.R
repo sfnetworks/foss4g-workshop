@@ -1,8 +1,10 @@
 # 0 - Packages and options -------------------------------------------------
 library(sf)
 library(tidygraph)
+# devtools::install_github('luukvdmeer/sfnetworks')
 library(sfnetworks)
 # Needs the github version of osmextract
+# devtools::install_github('ropensci/osmextract')
 library(osmextract)
 library(mapview)
 library(grid)
