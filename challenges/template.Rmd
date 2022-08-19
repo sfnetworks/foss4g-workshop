@@ -1,0 +1,23 @@
+# Chalenge code
+
+## Name
+
+## Challenge prompt
+
+You can copy here the challenge prompt.
+
+## Solution
+
+Add your solution here. You can enter code with a code chunk as:
+  
+```{r}
+# Write your code here
+library(sf)
+library(tidygraph)
+library(tidyverse)
+library(sfnetworks)
+```
+  
+## Problems?
+
+Did you run into any problem? There was not enough time to look into them during the workshop, let us know here and we will look into it :) 
