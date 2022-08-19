@@ -1,10 +1,9 @@
 # 0 - Packages and options -------------------------------------------------
 library(sf)
 library(tidygraph)
-# devtools::install_github('luukvdmeer/sfnetworks')
+# Install with: devtools::install_github('luukvdmeer/sfnetworks')
 library(sfnetworks)
-# Needs the github version of osmextract
-# devtools::install_github('ropensci/osmextract')
+# Install with: devtools::install_github('ropensci/osmextract')
 library(osmextract)
 library(mapview)
 library(grid)
@@ -34,12 +33,13 @@ street_segments_firenze <- oe_get_network(
   boundary = firenze, 
   boundary_type = "clipsrc", 
   vectortranslate_options = c(
+    "-select", "name,highway",
     "-nlt", "PROMOTE_TO_MULTI" 
   )
 )
 
 # Print the output
-street_segments_firenze[, c(2, 3)]
+street_segments_firenze
 
 # Unfortunately, due to the cropping operations, we need to slightly tweak the
 # output before proceeding with the next steps.
@@ -241,6 +241,9 @@ sfn_firenze %N>%
 
 # We refer to the introductory vignettes for several more preprocessing steps.
 
+# Clear ws 
+rm(edges, nodes, street_segments_firenze); gc()
+
 # 4 - Spatial joins and spatial filters ----------------------------------
 
 # Now we will showcase spatial joins and spatial filters using OSM data extracted
@@ -248,8 +251,6 @@ sfn_firenze %N>%
 # divided into several neighbourhoods (also named "Contrade"). I think it might
 # provide an ideal example to showcase these functionalities.
 
-# Clear ws 
-rm(edges, nodes, street_segments_firenze); gc()
 
 # > 4.1 - Spatial filters -------------------------------------------------
 
@@ -262,6 +263,7 @@ contrade <- oe_get(
   WHERE name LIKE 'Contrada%' OR name LIKE 'Contrata%'", 
   quiet = TRUE
 )
+contrade <- st_transform(contrade, 32632)
 contrade <- st_buffer(contrade, units::set_units(30, "m"))
 contrade_poly <- st_union(st_geometry(contrade))
 
@@ -273,14 +275,17 @@ piazza_campo_poly <- st_sfc(st_polygon(
     c(11.329, 43.316)
   ))
 ), crs = 4326)
+piazza_campo_poly <- st_transform(piazza_campo_poly, 32632)
 
 # Then download the segments
 street_segments_siena <- oe_get_network(
   place = "Toscana", 
   mode = "walking", 
-  boundary = contrade_poly, 
+  boundary = st_make_valid(contrade_poly), 
   boundary_type = "clipsrc", 
   vectortranslate_options = c(
+    "-select", "name",
+    "-t_srs", "EPSG:32632",
     "-nlt", "PROMOTE_TO_MULTI" 
   )
 )
@@ -524,9 +529,9 @@ duomo_piazzale_michelangelo <- sfn_firenze_small %>%
 ggplot() +
   geom_sf(data = st_geometry(sfn_firenze_small, "nodes"), col = grey(0.8)) + 
   geom_sf(data = st_geometry(sfn_firenze_small, "edges"), col = grey(0.8)) + 
-  geom_sf(data = pois, aes(col = poi), size = 4) + 
   geom_sf(data = duomo_palazzo_pitti %E>% st_geometry(), col = "black", size = 2) +
   geom_sf(data = duomo_piazzale_michelangelo %E>% st_geometry(), col = "black", size = 2) + 
   theme_minimal() + theme(panel.grid = element_blank(), legend.position = "bottom") + 
+  geom_sf(data = pois, aes(col = poi), size = 4) + 
   labs(col = "")
 
