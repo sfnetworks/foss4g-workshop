@@ -2,6 +2,7 @@
 library(sf)
 library(tidygraph)
 library(sfnetworks)
+# Needs the github version of osmextract
 library(osmextract)
 library(mapview)
 library(grid)
