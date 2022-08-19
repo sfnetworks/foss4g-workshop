@@ -11,7 +11,9 @@ Material for FOSS4G 2022 workshop on tidy spatial network analysis with sfnetwor
 
 - [Slides](https://sfnetworks.github.io/foss4g-workshop/slides/slides) 
 
-- [Live demo]()
+- [`sfnetworks` repo](https://github.com/luukvdmeer/sfnetworks)
+
+- [Live demo](scripts/demo.R)
 
 ## How to follow the tutorial
 
