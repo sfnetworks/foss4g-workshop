@@ -56,9 +56,12 @@ If that is the case, you would need to install the following packages:
 ```
 install.packages('dbscan')
 install.packages('igraph')
+install.packages('mapview')
 install.packages('tidygraph')
 install.packages('TSP')
+install.packages('tidyverse')
 devtools::install_github('luukvdmeer/sfnetworks')
+devtools::install_github('ropensci/osmextract')
 ```
 
 ## Question or problems?
