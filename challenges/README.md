@@ -16,7 +16,7 @@ You can start by trying to get road network data from Florence yourself, as show
 
 - `ch0102`: April 17th, 1480. Leonardo da Vinci is, as usual, at the Medici Palace. He feels like going for a walk of around 20 minutes. Which areas in Florence can he reach within this time?
 
-- `ch0103`: 
+- `ch0103`: In 1475, the official library of the Medici Palace flared up and, unfortunately, all street maps stored in the building were destroyed during the accident. Lorenzo di Piero de' Medici, the ruler of the city, asks the local geographers to recreate those maps and you need to help them! Pick your favourite city, download the street network data from OSM, and replicate some of the steps presented during the demo. Complete the analysis creating a beautiful map of the city network.  
 
 ## Intermediate :fire: :fire:
 
@@ -26,11 +26,11 @@ For acquiring the needed data, please read the **Beginners** prompt.
 
 - `ch0201`: It's Wednesday, the first day of the conference is about to finish. The last talk you want to attend ends at 4PM. You have some time to kill before the ice-breaker at 6PM, why not do a little tour of Florence attractions? Under [data/pois.rda](https://github.com/sfnetworks/foss4g-workshop/tree/main/data/) you will find a set of points of interest in the city. How many can you visit within these two hours? What is the final route you will take?
 
-- `ch0202`:
+- `ch0202`: The R package [`tidygraph`]((https://tidygraph.data-imaginist.com/reference/index.html)) implements several algorithms for network analysis (e.g. centrality calculation or community detection). Considering the street network of your favourite city (or a toy example), try to cluster the nodes using the *simulated annealing* algorithm and compute the *weighted* edge betweenness centrality measure (the weights are the spatial lengths of the segments). Represent the results. 
 
 - `ch0203`:
 
-## Advanced :fire: :fire: :fire:
+## Advanced :fire: :fire: :fire
 
 Are you also a package developer? Do you happen to be a graph analysis expert? Is R-Spatial your daily work? Here are a couple of open issues from `sfnetworks` we would love to discuss (and possibly solve!) with our community. 
 
