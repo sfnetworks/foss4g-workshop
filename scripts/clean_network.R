@@ -14,8 +14,6 @@ florence_center = getbb(
 )
 
 net_crop = st_intersection(net, florence_center)
-net_crop = net[florence_center, ]
-
 net_clean = net_crop |>
   convert(to_spatial_subdivision, .clean = TRUE) |>
   convert(to_spatial_smooth, .clean = TRUE) |>
