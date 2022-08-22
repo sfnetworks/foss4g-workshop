@@ -1,4 +1,4 @@
-FROM geocompr/geocompr:binder
+FROM rocker/geospatial:4.1.3
 
 ## Declares build arguments
 ARG NB_USER
