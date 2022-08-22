@@ -10,7 +10,7 @@ To share your solution to your chosen challenge, you can create a pull-request o
 
 This is the first time you are working with R-Spatial and related packages? Give these challenges a go. 
 
-You can start by trying to get road network data from Florence yourself, as shown on the demo. But if that is too much, you can take a look into the [data/](https://github.com/sfnetworks/foss4g-workshop/tree/main/data/) directory, where some data is already prepared for you. The same goes for the POIs. If you want to do this yourself, you can check the [scripts/](https://github.com/sfnetworks/foss4g-workshop/tree/main/scripts/) directory, which might even have some extra helper scripts for you :smile:
+You can start by trying to get road network data from Florence yourself, as shown in the [demo.R](https://github.com/sfnetworks/foss4g-workshop/blob/main/scripts/demo.R) script. But if that is too much, you can take a look into the [data/](https://github.com/sfnetworks/foss4g-workshop/tree/main/data/) directory, where some data is already prepared for you. The same goes for the POIs. If you want to do this yourself, you can check the [scripts/](https://github.com/sfnetworks/foss4g-workshop/tree/main/scripts/) directory, which might even have some extra helper scripts for you :smile:
 
 - `ch0101`: It is September 8th, 1504. Michelangelo is waking up at his residence, later known as Casa Buonarroti. Today he needs to go to Palazzo Vecchio to finally unveil his masterpiece sculpture: **David**. What would be the fastest way for him to get there? *Bonus:* He forgot he should pass the Duomo first before the unveil, how would his route change?
 

@@ -1,6 +1,8 @@
 library(sfnetworks)
 library(sf)
 library(tidygraph)
+library(osmdata) # for getbb function
+
 load('data/florence_stn.rda')
 
 
@@ -12,27 +14,26 @@ florence_center = getbb(
 )
 
 net_crop = st_intersection(net, florence_center)
-
 net_clean = net_crop |>
   convert(to_spatial_subdivision, .clean = TRUE) |>
   convert(to_spatial_smooth, .clean = TRUE) |>
-  convert(to_spatial_simple, .clean = TRUE) 
+  convert(to_spatial_simple, .clean = TRUE)
 
-net_comp = net_clean %>% 
-  activate("edges") %>% 
-  mutate(length = edge_length()) %>% 
-  activate("nodes") %>% 
-  morph(to_components) %>% 
-  activate("edges") %>% 
-  mutate(length_comp = sum(length)) %>% 
-  unmorph() %>% 
-  activate("nodes") %>% 
+net_comp = net_clean %>%
+  activate("edges") %>%
+  mutate(length = edge_length()) %>%
+  activate("nodes") %>%
+  morph(to_components) %>%
+  activate("edges") %>%
+  mutate(length_comp = sum(length)) %>%
+  unmorph() %>%
+  activate("nodes") %>%
   mutate(comp = group_components())
 
-net_filt = net_comp %>% 
-  activate("edges") %>% 
-  filter(length_comp > units::as_units(1000, "m")) %>% 
-  activate("nodes") %>% 
+net_filt = net_comp %>%
+  activate("edges") %>%
+  filter(length_comp > units::as_units(1000, "m")) %>%
+  activate("nodes") %>%
   filter(!node_is_isolated())
 
 plot(net_filt, col = 'grey70')

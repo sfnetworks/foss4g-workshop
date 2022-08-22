@@ -1,0 +1,61 @@
+
+```{r, message=FALSE}
+library(sf)
+library(sfnetworks)
+library(tidyverse)
+```
+
+
+First stage is to geolocate these places:
+
+- Casa Buonarroti
+- Palazzo Vecchio
+
+There are various ways to do this, the simplest I know that uses Google being `stplanr`:
+
+```{r}
+casa_buonarroti_coords = stplanr::geo_code("Casa Buonarroti, Florence")
+palazzo_vecchio_coords = stplanr::geo_code("Palazzo Vecchio, Florence")
+```
+
+The we can convert them to `sf` format:
+
+```{r}
+casa_buonarroti = st_sfc(st_point(casa_buonarroti_coords), crs = "EPSG:4326")
+palazzo_vecchio = st_sfc(st_point(palazzo_vecchio_coords), crs = "EPSG:4326")
+points = c(casa_buonarroti, palazzo_vecchio)
+mapview::mapview(points) # sanity check: looks good
+```
+
+Load the network:
+
+```{r}
+load("../data/florence_stn.rda")
+net = as_sfnetwork(florence_stn, directed = FALSE)
+net = readRDS("../data/net_new.Rds")
+```
+
+Routing:
+
+```{r, eval=FALSE}
+??shortest
+?to_spatial_shortest_paths
+```
+
+```{r}
+route = st_network_paths(x = net, from = casa_buonarroti, to = palazzo_vecchio)
+route = net |> 
+  activate("edges") |> 
+  mutate(weight = edge_length()) |> 
+  convert(to_spatial_shortest_paths, from = casa_buonarroti, to = palazzo_vecchio)
+plot(route)
+route_sf = route |> 
+  activate("edges") |> 
+  sf::st_as_sf()
+mapview::mapview(route_sf)
+sum(sf::st_length(route_sf))
+```
+
+
+
+
