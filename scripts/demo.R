@@ -19,7 +19,7 @@ options(sfn_max_print_inactive = 6L)
 firenze <- oe_get_boundary("Toscana", "Firenze", extra_tags = "name:en")
 
 # Check the output
-firenze[, c(1, 3, 7, 9, 25)]
+firenze[, c(1, 3, 7, 25)]
 
 # For simplicity, we will focus only on the city of Florence (instead of the
 # complete metropolitan area)
@@ -242,7 +242,7 @@ sfn_firenze %N>%
 # We refer to the introductory vignettes for several more preprocessing steps.
 
 # Clear ws 
-rm(edges, nodes, street_segments_firenze); gc()
+rm(edges, nodes, street_segments_firenze); gc(full = TRUE)
 
 # 4 - Spatial joins and spatial filters ----------------------------------
 
@@ -250,7 +250,6 @@ rm(edges, nodes, street_segments_firenze); gc()
 # from the city of Siena. In fact, Siena is a city near Florence "naturally"
 # divided into several neighbourhoods (also named "Contrade"). I think it might
 # provide an ideal example to showcase these functionalities.
-
 
 # > 4.1 - Spatial filters -------------------------------------------------
 
@@ -260,8 +259,7 @@ contrade <- oe_get(
   query = "
   SELECT name, place, geometry 
   FROM multipolygons 
-  WHERE name LIKE 'Contrada%' OR name LIKE 'Contrata%'", 
-  quiet = TRUE
+  WHERE name LIKE 'Contrada%' OR name LIKE 'Contrata%'" 
 )
 contrade <- st_transform(contrade, 32632)
 contrade <- st_buffer(contrade, units::set_units(30, "m"))
@@ -507,7 +505,7 @@ ggplot() +
   theme_minimal() + theme(panel.grid = element_blank(), legend.position = "bottom") + 
   labs(col = "")
 
-# we can calculate the shortest path between some of them using an ah-hoc
+# We can calculate the shortest path between some of them using an ad-hoc
 # spatial morpher named "to_spatial_shortest_path":
 duomo_palazzo_pitti <- sfn_firenze_small %>% 
   convert(
