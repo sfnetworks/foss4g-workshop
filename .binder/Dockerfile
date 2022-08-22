@@ -1,4 +1,4 @@
-FROM rocker/geospatial:4.1.3
+FROM rocker/geospatial:4.2.1
 
 ## Declares build arguments
 ARG NB_USER
